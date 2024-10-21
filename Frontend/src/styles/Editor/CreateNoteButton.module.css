@@ -1,0 +1,65 @@
+#add {
+    position: absolute;
+    bottom: 3vh;
+    right: clamp(20px, 6%, 50px);
+    border: none;
+    background-color: unset;
+    transition: .75s ease;
+    z-index: 11;
+}
+
+#add:hover {
+    transform: scale(1.25, 1.25);
+}
+
+#add:active {
+    animation: 1.25s spin2;
+}
+
+.whiteIcon {
+    background-image: url(../../resources/addIconWhite.png);
+    background-size: contain;
+    width: 40px;
+    height: 40px;
+    animation: spin1 1s ease-in-out;
+}
+
+.whiteLabel {
+    background-image: url(../../resources/addLabelWhite.png);
+    background-size: contain;
+    width: 124.5px;
+    height: 40px;
+}
+
+.brownIcon {
+    background-image: url(../../resources/addIconBrown.png);
+    background-size: contain;
+    width: 40px;
+    height: 40px;
+    animation: spin1 1s ease-in-out;
+}
+
+.brownLabel {
+    background-image: url(../../resources/addLabelBrown.png);
+    background-size: contain;
+    width: 124.5px;
+    height: 40px;
+}
+
+@keyframes spin1 {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spin2 {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(720deg);
+    }
+}

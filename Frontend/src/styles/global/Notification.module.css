@@ -1,0 +1,53 @@
+.container {
+    padding: 3px 6px;
+    border: 1px solid black;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.container.warning {
+    background-color: bisque;
+    border-color: yellow;
+}
+
+.container.success {
+    background-color: darkseagreen;
+    border-color: green
+}
+
+.container.error {
+    background-color: rgb(255, 128, 128);
+    border-color: red;
+}
+
+.text {
+    color: black;
+}
+
+.close {
+    display: block;
+    position: relative;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.close::before, .close::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 1px;
+    width: 100%;
+    background-color: rgb(37, 37, 37);
+}
+
+.close::before {
+    transform: rotate(45deg);
+}
+
+.close::after {
+    transform: rotate(-45deg);
+}

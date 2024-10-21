@@ -1,0 +1,91 @@
+.bigNoteTop { /* Appended to notes to position above a BigNote */
+    position: relative;
+    display: flex;
+    border-bottom: 1px solid grey;
+    animation: noteOpen .65s ease;
+    order: 0;
+}
+
+.bigNoteBottom { /* Appended to notes to position below a BigNote */
+    position: relative;
+    display: flex;
+    border-top: 1px solid grey;
+    height: 125px;
+    animation: noteOpen .65s ease;
+    order: 2;
+}
+
+.bigNoteTopBottomFade {
+    position: relative;
+    display: flex;
+    border-top: 1px solid grey;
+    height: 125px;
+    animation: noteConnectionsFade .75s ease;
+}
+
+.connectionLabel {
+    font-size: 12pt;
+    color: grey;
+    position: absolute;
+    flex: 1;
+    right: 2%;
+    bottom: 4%;
+    text-align: right;
+    opacity: 1;
+}
+
+.connectionLabelBottom {
+    top: unset;
+    bottom: 5%;
+}
+
+.noteWallBoundary {
+    border-radius: 15%;
+    position: absolute;
+    translate: -50% -50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.connectionNoteWall {
+    background-color: #dcb393;
+    border: 1px solid;
+    z-index: 5;
+}
+
+.closeButton {
+    position: absolute;
+    top: 8%;
+    right: 8%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.closeButton::before, .closeButton::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 2px; height: 100%;
+    background-color: black;
+    translate: 9px;
+}
+
+.closeButton::before {
+    transform: rotate(45deg);
+}
+
+.closeButton::after {
+    transform: rotate(-45deg);
+}
+
+@keyframes noteOpen {
+    0% { height: 0; }
+    100% { height: 125px; } 
+}
+
+@keyframes noteConnectionsFade {
+    0% { height: 125px; }
+    100% { height: 0; } 
+}

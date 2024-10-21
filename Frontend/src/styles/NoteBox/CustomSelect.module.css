@@ -1,0 +1,54 @@
+.configs {
+    background: white;
+    display: flex;
+    align-items: center;
+}
+
+#selectContainer { /* The container for notebook */
+    border-bottom: 1px solid grey;
+    padding: 9px;
+}
+
+#select {
+    border: none;
+    width: 100%;
+    font-size: 18pt;
+    color: grey;
+    padding: 5px;
+}
+
+#select:hover {
+    background: lightgrey;
+}
+
+#select:focus-visible {
+    outline: none;
+}
+
+.option {
+    display: none;
+}
+
+.nbDropdown {
+    position: relative;
+    width: 100%;
+}
+
+#nbOptions {
+    position: absolute;
+    top: 100%;
+    border-left: 1px solid;
+    border-right: 1px solid;
+    background: lightgrey;
+    z-index: 3;
+    width: 100%;
+    box-shadow: 0px 0px 3px black;
+}
+
+#nbOptions:focus-visible {
+    outline: none;
+}
+
+.nbOptionsInvisible {
+    visibility: hidden;
+}

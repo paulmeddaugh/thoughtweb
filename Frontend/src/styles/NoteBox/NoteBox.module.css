@@ -1,0 +1,120 @@
+#noteBox {
+    z-index: 10;
+    position: relative;
+}
+
+#infobox {
+    border-right: 1px solid grey;
+    background: lightgray;
+    height: 100%;
+    transition: 1s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.noSearchResults {
+    display: block;
+}
+
+.searchResults {
+    display: none;
+}
+
+#unpin {
+    padding: 2px;
+    margin-left: 6px;
+    margin-right: -1px;
+    display: inherit;
+}
+
+#unpin:hover img {
+    content: url("../../resources/pinIconUnfilled.png");
+}
+
+#filter {
+    padding: 2px;
+    margin-left: 4px;
+    margin-right: -4px;
+    display: inherit;
+}
+
+#filter:hover img {
+    content: url("../../resources/filterIconHover.png");
+}
+
+img {
+    max-width: 16px;
+    max-height: 16px;
+}
+
+#pin {
+    display: none;
+    position: absolute;
+    top: 14%;
+    left: 0%;
+    background: lightgrey;
+    transform-origin: bottom left;
+    transform: rotate(90deg);
+    border: 1px solid grey;
+    padding: 0 6px;
+    z-index: 3;
+
+    /* Prevents text highlighting */
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Opera and Firefox */
+                outline: none;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
+}
+
+#pin span {
+    margin-right: 6px;
+}
+
+#pin:hover {
+    background: #c1c1c1;
+}
+
+#pin img {
+    margin-top: 3px;
+}
+
+#pin:hover img {
+    content: url("../../resources/pinIconFilled.png");
+}
+
+#noteContainer {
+    overflow-y: auto;
+}
+
+.list-group-item {
+    cursor: pointer;
+    padding: 10px 16px;
+}
+
+#noNotes {
+    width: 100%;
+    text-align: center;
+    padding: 6px;
+}
+
+#reorderingNoteContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.resizeBar {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background-color: mediumseagreen;
+    cursor: col-resize;
+}

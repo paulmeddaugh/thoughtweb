@@ -1,0 +1,102 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    text-align: center; 
+    color:white;
+    background: var(--login-background);
+	background-position: center;
+	background-size: contain;
+	background-repeat: repeat;
+	background-color: rgb(2, 2, 14);
+    padding: 24px 0;
+    overflow-y: auto;
+}
+
+.content {
+    margin: auto;
+}
+
+.form {
+    margin: 0 48px;
+}
+
+.siteTitle {
+    font: 32px Corbel Light;
+    flex: 1 1 auto;
+    color:#00BFFF;
+}
+
+.pageTitle {
+    font: 28pt Corbel Light;
+    color:white;
+    margin: auto auto 45px;
+    font-style: italic;
+}
+
+div.center {
+    flex: 1 1 100%; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+div.inputRow {
+    margin: 5px 0;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.label {
+    font: 16px Corbel Light;
+    display: inline-block;
+    text-align: left;
+    width: 140px;
+}
+
+.labelRed {
+    color: red;
+}
+
+.inputContainer {
+    display: inline;
+}
+
+.redBorder {
+    padding: 4px 0px;
+    box-shadow: 0 1px 10px 4px red;
+}
+
+.textInputRed {
+    border: 1.5px solid red;
+}
+
+#crtAcc {
+    margin-bottom: 25px;
+}
+
+.link {
+    font: 12pt Corbel Light;
+	text-decoration: none;
+	border-bottom: 1px solid #505050;
+	padding: 1px;
+	margin: 3px;
+	color:#00BFFF;
+}
+
+.phantomFooter {
+    visibility: hidden;
+    height: 40px;
+    flex: 1 1 auto;
+}
+
+@media (max-width: 500px) {
+	.body {
+		background: var(--login-background-portrait);
+	}
+}

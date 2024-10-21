@@ -1,0 +1,46 @@
+.main {
+    width: 100%;
+    height: 100%;
+    background-image: url('../resources/accountBackground2 - desktop.png');
+    background-size: 1728px 648px;
+    background-position: center calc(50% - 46px);
+    position: relative;
+    display: flex;
+    overflow-x: auto;
+    background-attachment: local;
+}
+
+.info {
+    width: 200px;
+    height: max-content;
+    margin: auto;
+    translate: 0 -3px;
+    padding: 15px 0 21px 0;
+}
+
+.row {
+    display: grid;
+}
+
+.row:first-child {
+    margin-top: 0;
+}
+
+.read-only-row {
+    
+}
+
+.input {
+    /* background-color: none; */
+    border: none;
+    border-bottom: 1px solid grey;
+    /* outline: none; */
+}
+
+.row, .read-only-row {
+    margin-top: 5px;
+}
+
+.fancy {
+    font: 14pt 'Patrick';
+}

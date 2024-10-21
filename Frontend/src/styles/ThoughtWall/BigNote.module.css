@@ -1,0 +1,137 @@
+.mainNote, .stickyNote {
+    border: 1px solid black;
+    position: absolute;
+    padding: 5px;
+    transition: .5s ease;
+    translate: 0 0;
+    overflow: hidden;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    border-radius: 5px;
+}
+
+.mainNote {
+    width: 140px;
+    height: 175px;
+    background-color: rgb(240, 238, 239);
+}
+
+.mainNote:hover {
+    width: 200px;
+    height: 250px;
+    background-color: rgb(240, 238, 239);
+}
+
+.stickyNote {
+    width: 100px;
+    height: 100px;
+    background-color: rgb(255, 247, 209); /* rgb(255, 242, 171) */
+}
+
+.stickyNote:hover {
+    width: 175px;
+    height: 175px;
+    background-color: rgb(255, 247, 209);
+}
+
+.mainNote:hover, .stickyNote:hover {
+    z-index: 4;
+}
+
+.content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    order: 1;
+    padding: 2px;
+    flex: 1;
+}
+
+.contentMain {
+    min-height: 125px;
+}
+
+.contentSticky {
+    min-height: 100px;
+}
+
+.titleAndDateContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.noteTitle {
+    position: relative;
+    font-style: italic;
+    text-align: unset;
+    left: 50%;
+    translate: -50%;
+}
+
+.noteText {
+    text-overflow: ellipsis;
+    font-size: 11pt;
+    transition: .5s ease;
+    max-height: calc(100% - 25px);
+    overflow: hidden;
+    flex: 1;
+}
+
+.noteQuotes {
+    font: 11pt 'Corbel Light';
+    overflow: hidden;
+}
+
+.noteDate {
+    position: absolute;
+    left: 75%;
+    margin-top: -24px;
+    color: white;
+    white-space: nowrap;
+    transition: .5s ease;
+}
+
+.mainNote:hover .noteTitle, .stickyNote:hover .noteTitle {
+    left: 0%;
+    translate: 0%;
+}
+
+.mainNote:hover .noteText, .stickyNote:hover .noteText {
+    overflow-y: auto;
+    opacity: 1;
+}
+
+.mainNote:hover + .noteDate, .stickyNote:hover + .noteDate {
+    left: calc(75% + 30px);
+}
+
+.line {
+    width: 1px;
+    transition: .5s ease;
+}
+
+.connectedNote {
+    color: #dcb393;
+}
+
+.doubleClickLabel {
+    position: absolute;
+    top: 76%;
+    color: white;
+    transition: .5s ease;
+    opacity: 0;
+    z-index: 5;
+    padding: 0 4px;
+    padding-bottom: 1px;
+    border-radius: 1px;
+}
+
+.mainNote:hover ~ .doubleClickLabel, .stickyNote:hover ~ .doubleClickLabel {
+    opacity: 1;
+    top: calc(76% + 40px);
+    background-color: #00000085;
+}

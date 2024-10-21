@@ -1,0 +1,130 @@
+.mainNote, .stickyNote {
+    border: 1px solid black;
+    translate: -50% -50%;
+    position: absolute;
+    padding: 3px;
+    transition: .5s ease;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    border-radius: 3px;
+}
+
+.mainNote {
+    width: 100px;
+    height: 125px;
+    background-color: rgb(240, 238, 239); /* rgb(255, 242, 171), #f5dec3 */
+}
+
+.mainNote:hover {
+    width: 150px;
+    height: 187px;
+    background-color: rgb(240, 238, 239);
+    z-index: 4;
+}
+
+.mainNote:hover .connectionText {
+    opacity: 1;
+}
+
+.stickyNote {
+    width: 100px;
+    height: 100px;
+    background-color: rgb(255, 247, 209); /* rgb(255, 242, 171) */
+}
+
+.stickyNote:hover {
+    width: 150px;
+    height: 150px;
+    background-color: rgb(255, 247, 209);
+    z-index: 4;
+}
+
+.noteTitle {
+    margin-bottom: 0px;
+    overflow: hidden;
+    font-weight: bold;
+    min-height: 1.4em;
+    max-height: 3rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.noteText {
+    font-size: 11pt;
+    transition: .5s ease;
+    animation: fadeIn .75s;
+    max-height: calc(100% - 20px);
+    overflow: hidden;
+    flex: 1;
+}
+
+.noteQuotes {
+    font: 11pt 'Corbel Light';
+    overflow: hidden;
+}
+
+.mainNote:hover .noteText, .stickyNote:hover .noteText {
+    opacity: 1;
+    display: block;
+    overflow-y: overlay;
+}
+
+.selected {
+    color: royalblue;
+}
+
+.connectionNote {
+    translate: 0px 0px;
+    position: relative;
+    height: 125px;
+    box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, .2);
+    font-weight: normal;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    animation: fadeIn 1s ease;
+    /* box-shadow: inset 0 -3em 3em rgba(0, 0, 0, 0.1), 0 0 0 2px rgb(255, 255, 255),
+    0.3em 0.3em 1em rgba(0, 0, 0, 0.3); */
+}
+
+.connectionNote:hover {
+    transform: translate(0, 0);
+    height: 125px;
+}
+
+.connectionText {
+    display: none;
+    opacity: 0;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.connectionText:hover {
+    opacity: 1;
+}
+
+.connectionWallInfo {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    margin-left: -76px;
+    translate: 0% -54%;
+    padding-bottom: 1px;
+    transform: rotate(90deg);
+    color: white;
+    white-space: nowrap;
+    opacity: 0;
+    transition: .75s ease;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.mainNote:hover .connectionWallInfo, .stickyNote:hover .connectionWallInfo {
+    opacity: 1;
+}

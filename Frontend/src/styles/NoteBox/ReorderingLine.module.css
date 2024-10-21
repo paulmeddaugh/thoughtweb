@@ -1,0 +1,7 @@
+#line {
+    position: absolute;
+    width: 301px;
+    height: 5px;
+    translate: 0 -50%;
+    background-color: blue;
+}

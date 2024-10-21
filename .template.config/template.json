@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Paul Meddaugh",
+    "classifications": [ "Common", "React", "Typescript", "ASP.NET", "MVC" ],
+    "identity": "ASP.NET + React/Typescript",
+    "name": "ASP.NET + React/Typescript",
+    "shortName": "asp-react-ts",
+    "sourceName":"asp-react-ts",
+    "tags": {
+      "language": "C#",
+      "type": "project"
+    }
+  }

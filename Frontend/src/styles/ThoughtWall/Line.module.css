@@ -1,0 +1,22 @@
+.line {
+    position: absolute;
+    background-color: black;
+    transition: .55s ease;
+    translate:  -50% -50%;
+    /* transform-origin: top left; */
+}
+
+.dashed {
+    background-color: unset;
+    background-image: linear-gradient(to right, #9a2e30 60%, rgba(255, 255, 255, 0) 0%);
+    background-position: top;
+    background-size: 15px 2px;
+    background-repeat: repeat-x;
+}
+
+.point {
+    position: absolute;
+    border-radius: 50%;
+    background-color: black;
+    transition: .6s ease;
+}

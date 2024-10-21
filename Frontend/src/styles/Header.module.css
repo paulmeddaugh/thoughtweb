@@ -1,0 +1,133 @@
+:root {
+    --navbar-toggler-bar-space: 8px;
+}
+
+.headerColor {
+    background-color: #0d0a42;
+}
+
+.infoBox {
+    border-right: 1px solid grey;
+    height: 100%;
+    background: grey;
+    opacity: .8;
+}
+
+/* Hamburger menu */
+
+.navbar-toggler {
+    /* width: var(--navbar-toggler-bar-space);
+    height: var(--navbar-toggler-bar-space); */
+    width: 20px;
+    height: 20px;
+    position: relative;
+    transition: .5s ease-in-out;
+}
+
+.navbar-toggler,
+.navbar-toggler:focus,
+.navbar-toggler:active,
+.navbar-toggler-icon:focus {
+    outline: none;
+    box-shadow: none;
+    border: 0;
+}
+
+.navbar-toggler span {
+    margin: 0;
+    padding: 0;
+}
+
+.toggler-icon {
+    display: block;
+    position: absolute;
+    height: 3px;
+    width: 100%;
+    background: white;
+    border-radius: 1px;
+    opacity: 1;
+    left: 0;
+    transform: rotate(0deg);
+    transition: .25s ease-in-out;
+}
+
+.middle-bar {
+    margin-top: 0;
+}
+
+/* when showing hamburger menu */
+
+.navbar-toggler .top-bar {
+    margin-top: 0px;
+    transform: rotate(135deg);
+}
+
+.navbar-toggler .middle-bar {
+    opacity: 0;
+    filter: alpha(opacity=0);
+}
+
+.navbar-toggler .bottom-bar {
+    margin-top: 0px;
+    transform: rotate(-135deg);
+}
+
+/* When hamburger menu is hidden */
+
+.navbar-toggler.collapsed .top-bar {
+    margin-top: calc(-1 * var(--navbar-toggler-bar-space));
+    transform: rotate(0deg);
+}
+
+.navbar-toggler.collapsed .middle-bar {
+    opacity: 1;
+    filter: alpha(opacity=100);
+}
+
+.navbar-toggler.collapsed .bottom-bar {
+    margin-top: var(--navbar-toggler-bar-space);
+    transform: rotate(0deg);
+}
+
+.brandLink {
+    color: white!important;
+    font: 24pt 'Abuget';
+    margin: 0 0 -5px 4px;
+}
+
+.brandLink:hover {
+    color: rgb(186, 186, 186);
+}
+
+.brandLink:visited {
+    color: white;
+}
+
+.leftContainer {
+    flex: 1;
+}
+
+.centerContainer {
+    flex: 1;
+    display: contents;
+}
+
+#editor, #journalWall {
+    /* font: 16pt 'Abuget'; */
+    width: -webkit-fill-available;
+}
+
+#about {
+    color: white;
+}
+
+.accountLink {
+    font: 12pt Corbel Light;
+    font-weight: bold;
+	text-decoration: none;
+	border-bottom: 1px solid #505050;
+	padding: 1px;
+	margin: 4px;
+	color: #00BFFF;
+    text-align: end;
+}

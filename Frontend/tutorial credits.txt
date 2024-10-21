@@ -1,0 +1,12 @@
+Storing an array of refs in React - https://mattclaffey.medium.com/adding-react-refs-to-an-array-of-items-96e9a12ab40c
+Packaging React frontend in Spring boot jar - https://www.youtube.com/watch?v=PnTh4DmJMa8
+How to deploy a Spring boot application to Railway - https://www.youtube.com/watch?v=5sVxvF47dcU
+Custom Bootstrap hamburger menu - https://www.youtube.com/watch?v=_MrShB9fh7U
+Spring Boot OAuth2:
+https://www.youtube.com/watch?v=ouE3NuTzf20
+https://spring.io/guides/tutorials/spring-boot-oauth2/
+Sending email with Spring Boot - https://www.youtube.com/watch?v=onCzCxDyR24
+Forgot My Password flow - https://www.baeldung.com/spring-security-registration-i-forgot-my-password
+Authentication using a custom user database:
+https://www.baeldung.com/spring-security-authentication-with-a-database
+https://www.baeldung.com/spring-security-login#:~:text=The%20POST%20URL%20for%20Login,j_spring_security_check%20before%20Spring%20Security%204.&text=By%20overriding%20this%20default%20URL,actually%20secured%20with%20Spring%20Security

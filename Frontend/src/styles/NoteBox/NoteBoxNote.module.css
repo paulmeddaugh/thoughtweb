@@ -1,0 +1,85 @@
+.container {
+    -webkit-touch-callout: none;
+}
+
+.title {
+    overflow: hidden;
+    max-height: 1.7rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    margin-right: 3px;
+    line-height: 1.9rem;
+    margin-bottom: .4rem;
+}
+
+.date, .unsavedNoteText {
+    white-space: nowrap;
+}
+
+.text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-height: 1.28rem;
+}
+
+.removeNote {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: url('../../resources/removeIcon.png');
+    background-size: cover;
+    left: 88%;
+    bottom: 10%;
+    opacity: 0;
+    transition: .25s ease;
+}
+
+.container:hover .removeNote {
+    left: 91%;
+    opacity: 1;
+}
+
+.removeNote:hover {
+    background: url('../../resources/removeIconHover.png');
+    background-size: cover;
+}
+
+.unsavedNote {
+    background-repeat: no-repeat;
+  
+    background-size: 
+        calc(100%) 31px, /* top & bottom */
+        4px calc(100%); /* right & left */
+    
+    background-position: 
+        0px 6px, /* top */
+        calc(100%) 0px, /* right */
+        0px calc(100%), /* bottom */
+        0px 0px; /* left */
+    
+    background-image: 
+        linear-gradient(0deg, rgba(211, 211, 211, 0.749), rgba(211, 211, 211, 0.749)),
+        linear-gradient(90deg, rgba(211, 211, 211), rgb(211, 211, 211, .749)),
+        linear-gradient(180deg, transparent, transparent),
+        linear-gradient(270deg, transparent, transparent);
+}
+
+.unsavedNoteText {
+    font-style: italic;
+}
+
+.reordering {
+    position: absolute;
+    opacity: .6;
+    width: 300px;
+    padding: 8px 16px;
+    background: white;
+    cursor: default;
+    top: 400px;
+    pointer-events: none;
+}
+
+.reordering:hover {
+    background-color: white;
+}

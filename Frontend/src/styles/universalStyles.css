@@ -1,0 +1,74 @@
+:root {
+    /* colors */
+    --background-blue: #04044d;
+    --dark-background-blue: rgb(3 3 45);
+
+    /* login screens */
+    --login-background-url: url("../resources/backgroundWithoutVignette.png"),
+        radial-gradient(var(--background-blue) 50%, var(--dark-background-blue));
+    --login-background-gradient: radial-gradient(transparent 50%, var(--dark-background-blue));
+    --login-background: var(--login-background-gradient), var(--login-background-url);
+    
+    --login-background-portrait-url: url("../resources/backgroundPortrait.jpg");
+    --login-background-portrait: var(--login-background);
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.flex0 {
+    flex: 0;
+}
+
+.flex1 {
+    flex: 1;
+}
+
+.zIndex1 {
+    z-index: 1;
+}
+
+.relative {
+    position: relative;
+}
+
+.display-none {
+    display: none;
+}
+
+.opacity001 {
+    opacity: 0.01;
+}
+
+.opacity1 {
+    opacity: 1;
+}
+
+.button {
+	font-family: Corbel Light; 
+	background-color: darkblue; /* #0CAC25 */
+   	color: white; 
+	border-color: darkblue;
+    font-style: bold;
+	margin-top: 25px;
+}
+
+.textCenter {
+    text-align: center;
+}
+
+.link {
+	font: 12pt Corbel Light;
+	text-decoration: none;
+	border-bottom: 1px solid #505050;
+	padding: 1px;
+	margin: 4px;
+	color: #00BFFF;
+}

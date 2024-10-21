@@ -1,0 +1,53 @@
+.nbOption {
+    padding: 3px 5px;
+    font-size: 16pt;
+    display: flex;
+    justify-content: space-between;
+    white-space: nowrap;
+    background-color: lightgrey;
+}
+
+.nbOption:hover {
+    background: #1E90FF;
+    color: white;
+}
+
+.removeNb {
+    background: url('../../resources/removeIcon.png');
+    background-size: contain;
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    position: absolute;
+    right: 0%;
+    margin: 8px;
+    opacity: 0;
+    transition: .5s ease;
+}
+
+.removeNb:hover {
+    background: url('../../resources/removeIconHover.png');
+    background-size: contain;
+}
+
+.addNb {
+    background: url('../../resources/addIconHover.png');
+    background-size: contain;
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    position: absolute;
+    right: 0%;
+    margin: 9px;
+    opacity: 0;
+    transition: .5s ease;
+}
+
+.addNb:hover {
+    background: url('../../resources/addIcon.png');
+    background-size: contain;
+}
+
+.nbOption:hover .removeNb, .nbOption:hover .addNb {
+    opacity: 1;
+}

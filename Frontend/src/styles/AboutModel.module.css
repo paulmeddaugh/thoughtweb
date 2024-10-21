@@ -1,0 +1,16 @@
+.title {
+    margin-top: 5px;
+    margin-bottom: -2px;
+}
+
+.thoughtweb {
+    display: inline-block;
+    font: 26pt Abuget;
+    padding-left: 5px;
+    vertical-align: middle;
+}
+
+.description {
+    max-height: unset;
+    font-size: 10pt;
+}
