@@ -17,3 +17,18 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+@font-face {
+	font-family: 'Corbel Light';
+	src: url("./resources/fonts/Corbel\ Light.TTF") format("truetype");
+}
+
+@font-face {
+    font-family: "Abuget";
+    src: url("./resources/fonts/Abuget.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Corbel";
+    src: url("./resources/fonts/Corbel.ttf") format("truetype");
+}

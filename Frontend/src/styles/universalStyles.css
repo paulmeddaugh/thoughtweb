@@ -1,7 +1,14 @@
 :root {
     /* colors */
+    --black-berry: rgba(22, 22, 22);
     --background-blue: #04044d;
     --dark-background-blue: rgb(3 3 45);
+    --red-non-aggressive: #cb0300;
+    --red-error: rgba(203, 3, 0, .6);
+    --link-light-blue: #00BFFF;
+    --link-light-blue-400: rgba(0, 191, 255, 0.4);
+    --link-light-blue-700: rgba(0, 191, 255, 0.7);
+    --link-light-blue-800: rgba(0, 191, 255, 0.8);
 
     /* login screens */
     --login-background-url: url("../resources/backgroundWithoutVignette.png"),
@@ -58,6 +65,14 @@
 	border-color: darkblue;
     font-style: bold;
 	margin-top: 25px;
+
+    /* font: 700 1rem Corbel Light;
+	background-color: darkblue;
+   	color: whitesmoke; 
+	border-color: darkblue;
+    font-style: bold;
+	margin-top: 25px;
+    padding: 2px 16px; */
 }
 
 .textCenter {

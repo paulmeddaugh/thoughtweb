@@ -1,4 +1,5 @@
 export const RED = '#9a2e30';
+export const RED_NON_AGGRESSIVE = '#cb0300';
 export const BACKGROUND_BLUE = "#04044d";
 export const DARK_BACKGROUND_BLUE = "rgb(3 3 45)";
 export const TRANSPARENT = "rgba(238, 238, 238, 0)";

@@ -7,34 +7,33 @@ html, body {
     height: 100%;
     margin: 0;
     display: flex;
-    text-align: center; 
-    color:white;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font: 700 16px Corbel Light;
+    color: lightgrey;
+    letter-spacing: -.02rem;
     background: var(--login-background);
 	background-position: center;
 	background-size: contain;
 	background-repeat: repeat;
 	background-color: rgb(2, 2, 14);
-    padding: 24px 0;
     overflow-y: auto;
 }
 
 .content {
-    margin: auto;
+    flex: 1;
+    max-width: 500px;
+    padding: 24px 0;
 }
 
 .form {
     margin: 0 48px;
 }
 
-.siteTitle {
-    font: 32px Corbel Light;
-    flex: 1 1 auto;
-    color:#00BFFF;
-}
-
 .pageTitle {
     font: 28pt Corbel Light;
-    color:white;
+    color: whitesmoke;
     margin: auto auto 45px;
     font-style: italic;
 }
@@ -47,37 +46,56 @@ div.center {
 }
 
 div.inputRow {
-    margin: 5px 0;
+    margin: 8px 0;
     display: flex;
     flex-wrap: wrap;
+    /* background-color: #0e034f; */
+    background-color: #0c024288;
+    
+    border-radius: 3px;
+    overflow: hidden;
 }
 
 .label {
-    font: 16px Corbel Light;
-    display: inline-block;
-    text-align: left;
-    width: 140px;
+    display: flex;
+    align-items: center;
+    width: 146px;
+    padding-left: 6px;
 }
 
-.labelRed {
-    color: red;
+.label.labelRed {
+    color: var(--red-non-aggressive);
+    font-weight: 700;
 }
 
-.inputContainer {
-    display: inline;
+.input {
+    border: 0px solid darkgrey;
+    padding: 5px;
+    background-color: whitesmoke;
 }
 
-.redBorder {
-    padding: 4px 0px;
-    box-shadow: 0 1px 10px 4px red;
+.input:focus-visible {
+    outline: none;
+    box-shadow: -3px 0 0px 0px var(--link-light-blue-400);
 }
 
-.textInputRed {
-    border: 1.5px solid red;
+.input.inputRed {
+    box-shadow: -3px 0 0px 0px var(--red-error);
 }
 
 #crtAcc {
     margin-bottom: 25px;
+    padding: 4px 24px;
+    border-style: none;
+    border: 2px solid rgb(0, 0, 90);
+    border-radius: 3px;
+    font: 800 16px Corbel Light;
+}
+
+#crtAcc:hover {
+    background-color: rgb(0, 0, 128);
+    border: 2px solid rgb(0, 0, 86);
+    color: lightgray;
 }
 
 .link {
@@ -95,8 +113,24 @@ div.inputRow {
     flex: 1 1 auto;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 447px) {
 	.body {
 		background: var(--login-background-portrait);
+        display: grid;
 	}
+    div.inputRow {
+        margin-top: 16px;
+        overflow: visible;
+    }
+    .label {
+        padding-left: 0;
+        margin-bottom: 3px;
+    }
+    .input {
+        border-bottom-right-radius: 3px;
+        border-bottom-left-radius: 3px;
+    }
+    .input:focus-visible {
+        box-shadow: -3px 0 0px 0px var(--link-light-blue-400);
+    }
 }

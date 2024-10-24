@@ -93,6 +93,7 @@ input[list]::-webkit-list-button {
 	border-radius: 8px;
 	padding: 4px 8px;
 	cursor: pointer;
+	text-decoration: none;
 }
 
 .oauthLinkContainer:active {
@@ -120,12 +121,16 @@ input[list]::-webkit-list-button {
 }
 
 .link {
-	font: 12pt Corbel Light;
+	font: 700 1rem Corbel Light;
 	text-decoration: none;
 	border-bottom: 1px solid #505050;
 	padding: 1px;
 	margin: 4px;
-	color: #00BFFF;
+	color: var(--link-light-blue-700);
+}
+
+.link:hover {
+    color: var(--link-light-blue-400);
 }
 
 .submitContainer {

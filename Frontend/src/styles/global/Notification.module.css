@@ -1,10 +1,15 @@
 .container {
-    padding: 3px 6px;
     border: 1px solid black;
     border-radius: 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: lightgrey;
+    padding: 8px;
 }
 
 .container.warning {
@@ -22,8 +27,13 @@
     border-color: red;
 }
 
+.textContainer {
+    width: 100%;
+}
+
 .text {
-    color: black;
+    color: var(--black-berry);
+    font: 700 1rem Corbel Light;
 }
 
 .close {

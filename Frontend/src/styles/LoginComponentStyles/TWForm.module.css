@@ -1,0 +1,153 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font: 700 16px Corbel Light;
+    color: lightgrey;
+    letter-spacing: -.02rem;
+    background: var(--login-background);
+	background-position: center;
+	background-size: contain;
+	background-repeat: repeat;
+	background-color: rgb(2, 2, 14);
+    overflow-y: auto;
+}
+
+.content {
+    flex: 1;
+    padding: 24px 0;
+}
+
+.form {
+    margin: 0 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pageTitle {
+    font: 28pt Corbel Light;
+    color: whitesmoke;
+    margin: auto auto 45px;
+    font-style: italic;
+}
+
+div.center {
+    flex: 1 1 100%; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+div.inputRow {
+    margin-bottom: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #0c024288;
+    width: 100%;
+    /* max-width: calc(500px - 146px + 48px - 6px); */
+    max-width:404px;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+div.inputRow:first-child {
+    margin-top: 0;
+}
+
+.label {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 146px;
+    padding-left: 6px;
+}
+
+.label.labelRed {
+    color: var(--red-non-aggressive);
+    font-weight: 700;
+}
+
+.input {
+    border: 0px solid darkgrey;
+    padding: 5px;
+    background-color: whitesmoke;
+}
+
+.input:hover,
+.input:focus-visible {
+    outline: none;
+    box-shadow: -3px 0 0px 0px var(--link-light-blue-400);
+}
+
+.input.inputRed {
+    box-shadow: -3px 0 0px 0px var(--red-error);
+}
+
+.submit {
+    margin-top: 26px;
+    background-color: darkblue;
+    color: whitesmoke;
+    margin-bottom: 25px;
+    padding: 4px 24px;
+    border-style: none;
+    border: 2px solid rgb(0, 0, 90);
+    border-radius: 3px;
+    font: 800 16px Corbel Light;
+}
+
+.submit:hover {
+    background-color: rgb(0, 0, 128);
+    border: 2px solid rgb(0, 0, 86);
+    color: lightgray;
+}
+
+.link {
+    font: 700 12pt Corbel Light;
+	text-decoration: none;
+	border-bottom: 1px solid #505050;
+	padding: 1px;
+	margin: 3px;
+    color: var(--link-light-blue-700);
+}
+
+.link:hover {
+    color: var(--link-light-blue-400);
+}
+
+.phantomFooter {
+    visibility: hidden;
+    height: 40px;
+    flex: 1 1 auto;
+}
+
+@media (max-width: 447px) {
+	.body {
+		background: var(--login-background-portrait);
+        display: grid;
+	}
+    div.inputRow {
+        margin-top: 16px;
+        overflow: visible;
+    }
+    .label {
+        padding-left: 0;
+        margin-bottom: 3px;
+        max-width: unset;
+    }
+    .input {
+        border-bottom-right-radius: 3px;
+        border-bottom-left-radius: 3px;
+    }
+    .input:focus-visible {
+        box-shadow: -3px 0 0px 0px var(--link-light-blue-400);
+    }
+}

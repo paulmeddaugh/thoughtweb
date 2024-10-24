@@ -191,3 +191,13 @@ export const interpolate = (from, to, progress) => {
     const valDif = from - to;
     return to + valDif * progressInvert;
 }
+
+export const fillObjectWithValues = (object, fillFunction) => {
+    return Object.keys(object)
+        .reduce((newObj, key) => {
+            newObj[key] = typeof fillFunction === 'function'
+                ? fillFunction?.(key)
+                : fillFunction ?? 0;
+            return newObj;
+        }, {})
+}

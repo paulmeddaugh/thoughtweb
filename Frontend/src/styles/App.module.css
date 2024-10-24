@@ -55,18 +55,3 @@ p {
     font-size: 10pt;
     /* max-height: 2rem; */
 }
-
-@font-face {
-	font-family: 'Corbel Light';
-	src: url("../resources/fonts/Corbel\ Light.TTF") format("truetype");
-}
-
-@font-face {
-    font-family: "Abuget";
-    src: url("../resources/fonts/Abuget.ttf") format("truetype");
-}
-
-@font-face {
-    font-family: "Corbel";
-    src: url("../resources/fonts/Corbel.ttf") format("truetype");
-}

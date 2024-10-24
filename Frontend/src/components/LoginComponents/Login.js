@@ -1,14 +1,15 @@
-import { useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { isDev } from '../../scripts/utility/utility';
+import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import styles from '../../styles/LoginComponentStyles/Login.module.css';
-import { BACKGROUND_BLUE, DARK_BACKGROUND_BLUE } from '../../constants/colors';
-import Fader from '../global/Fader';
+import Notification from '../global/Notification';
+
+const BASE_URL = `${window.location.protocol}//${window.location.host}`;
+const GOOGLE_LOGIN_URL = `${BASE_URL}/account/login-google`;
 
 const Login = ({ usernameValue, passwordValue, onUsernameChange, onPasswordChange, onSubmit, onOAuth2Login }) => {
-
     const usernameRef = useRef(null);
     const passwordRef = useRef(null);
+    const [notificationProps, setNotificationProps] = useState(null);
 
     const validateForm = async (e) => {
         
@@ -25,7 +26,7 @@ const Login = ({ usernameValue, passwordValue, onUsernameChange, onPasswordChang
         }
 
         if (error) {
-            alert(error);
+            setNotificationProps({ type: 'error', text: error });
             focusRef.current.focus();
             e.preventDefault();
         } else {
@@ -34,10 +35,17 @@ const Login = ({ usernameValue, passwordValue, onUsernameChange, onPasswordChang
     }
 
     return (
-        <div 
+        <section 
             className={`${styles.flexCenter} ${styles.body}`} 
             // style={{ background: `radial-gradient(${BACKGROUND_BLUE} 50%, ${DARK_BACKGROUND_BLUE})` }}
         >
+            {!!notificationProps && (
+                <Notification 
+                    type={notificationProps?.type} 
+                    text={notificationProps?.text}
+                    onClose={() => setNotificationProps(null)}
+                />
+            )}
             <h1 className={styles.title}>thoughtweb</h1>
             <div id={styles.journal} />
             <div>
@@ -49,6 +57,7 @@ const Login = ({ usernameValue, passwordValue, onUsernameChange, onPasswordChang
                         <input 
                             type="text" 
                             id="Username" 
+                            name='usn'
                             className={`${styles.textAlignCenter} ${styles.inputs}`}
                             placeholder="Username or Email"
                             ref={usernameRef}
@@ -64,6 +73,7 @@ const Login = ({ usernameValue, passwordValue, onUsernameChange, onPasswordChang
                         <input 
                             type="password" 
                             id="Password" 
+                            name='pwd'
                             className={`${styles.textAlignCenter} ${styles.inputs}`}
                             placeholder="Password"
                             ref={passwordRef} 
@@ -84,21 +94,21 @@ const Login = ({ usernameValue, passwordValue, onUsernameChange, onPasswordChang
                 </form>
                 <div className={styles.linksContainer}>
                     <div id={styles.oauthLinks}>
-                        <div 
+                        <a 
                             className={styles.oauthLinkContainer} 
-                            onClick={(e) => window.location.href = `${isDev() ? 'http://localhost:8080' : ''}/oauth2/authorization/google`}
+                            href={GOOGLE_LOGIN_URL}
                         >
                             <div className={styles.googleIcon}></div>
                             <span className={styles.oauthLinkText}>Log In With Google</span>
-                        </div>
+                        </a>
                     </div>
                     <div>
                         <Link className={styles.link} to="createAccount">Create Account</Link>
-                        <Link className={styles.link}  to="forgotPassword">Forgot Password</Link>
+                        <Link className={styles.link}  to="forgotPassword">Forgot Password?</Link>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
     );
 }
 

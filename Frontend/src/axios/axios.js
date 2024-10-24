@@ -12,15 +12,15 @@ export const loginWithCredentials = async (username, password) => {
 }
 
 export const createNewUserOnBack = (user) => {
-    return axios.post('/api/users/newUser', user);
+    return axios.post('/api/users/register', user);
 }
 
 export const getCurrentUserFromBackend = () => {
     return axios.get('/api/user');
 };
 
-export const sendResetPasswordEmailRequest = (username) => {
-    return axios.post(`/api/user/resetPassword?username=${username}`);
+export const sendResetPasswordEmailRequest = (email) => {
+    return axios.post(`/api/user/resetPassword?email=${email}`);
 }
 
 export const updatePassword = (token, newPassword) => {

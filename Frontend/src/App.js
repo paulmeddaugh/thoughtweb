@@ -183,7 +183,7 @@ const App = () => {
     }
 
     return (
-        <div className={styles.fullSize}>
+        <main className={styles.fullSize}>
             {loading && (
                 <Fader 
                     className={styles.fullSize} 
@@ -271,7 +271,7 @@ const App = () => {
                     </BrowserRouter>
                 )
             )}
-        </div>
+        </main>
     );
 }
 
