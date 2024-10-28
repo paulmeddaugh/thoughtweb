@@ -125,10 +125,12 @@ const App = () => {
         setSelected({ note: newNote, index: graph.size() - 1 });
     }
 
-    const onLoginSubmit = (username, password) => {
+    const onLoginSubmit = (username, password, isEmail) => {
         setLoading({ status: 'Loading...', icon: 0 });
 
-        loginWithCredentials(username, password).then(async response => {
+        loginWithCredentials(username, password, isEmail).then(async response => {
+            console.log('response', response);
+            const authData = response.data;
             setUser(response?.data?.user);
         }).catch(async (error) => {
             console.log(error);
@@ -136,16 +138,15 @@ const App = () => {
                 setLoading({ status: 'The backend is not running.', linkText: 'Retry' });
             } else {
                 // retrys to access the user data again, sometimes it doesn't recognize auth immediately
-                if (error?.response?.data === '') {
-                    const res = await getCurrentUserFromBackend();
-                    if (res.data) {
-                        setUser(res.data.user);
-                        return;
-                    }
+                const status = error.response?.status;
+                const { data } = error?.response ?? {};
+                let message = 'Error';
+                if (data?.title) {
+                    message = data?.title;
                 }
 
                 setLoading({ 
-                    status: error?.response ? `${error.response?.data?.exception ?? 'Error'} | ${error.response?.status}` : 'There has been an error.', 
+                    status: error?.response ? `${message} | ${status}` : 'There has been an error.', 
                     linkText: 'Retry'
                 });
             }

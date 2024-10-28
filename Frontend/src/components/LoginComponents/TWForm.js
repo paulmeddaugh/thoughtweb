@@ -56,11 +56,19 @@ const TWForm = ({
         onNotificationClose?.();
     }
 
+    const onPasswordChange = (e) => {
+        const changeResult = onFormInputChange(e);
+        if (formState?.repwd) {
+            onFormInputChange({ target: { name: 'repwd', value: formState.repwd } })
+        }
+        return changeResult;
+    }
+
     return (
         <div className={styles.body}>
             {(!!internalNotificationProps || !!notificationProps ) && (
                 <Notification 
-                    type={internalNotificationProps?.type} 
+                    type={notificationProps?.type || internalNotificationProps?.type} 
                     text={notificationProps?.text || internalNotificationProps?.text}
                     onClose={handleNotificationClose}
                 />
@@ -72,13 +80,14 @@ const TWForm = ({
                     ) : 
                         renderTitle?.()
                     }
-                    {inputPropertiesArray.map(({ name, label }) => (
+                    {inputPropertiesArray.map(({ name, label, description }) => (
                         <InputRow
                             label={`${label}:`}
                             name={name}
+                            description={description}
                             error={formErrors[name]}
                             showError={touched[name]}
-                            onChange={onFormInputChange}
+                            onChange={name !== 'pwd' ? onFormInputChange : onPasswordChange}
                             onBlur={onFormInputBlur}
                             key={name}
                         />
@@ -104,25 +113,33 @@ const TWForm = ({
     )
 }
 
-function InputRow ({ label, name, error, showError, onChange, onBlur }) {
+function InputRow ({ label, name, description, error, showError, onChange, onBlur }) {
     const isError = error && showError;
     return (
-        <div className={styles.inputRow}>
-            <label 
-                className={styles.label + (isError ? " " + styles.labelRed : '')} 
-                htmlFor={name}
-            >
-                {label}
-            </label>
-            <input
-                type={(name !== 'pwd' && name !== 'repwd') ? 'text' : 'password'}
-                name={name} 
-                className={`flex1 ${styles.input} ${isError ? styles.inputRed : ''}`}
-                id={name}
-                size="30" 
-                onChange={onChange}
-                onBlur={onBlur}
-            />
+        <div className={styles.inputField}>
+            <div className={styles.inputRow}>
+                <label 
+                    className={styles.label + (isError ? " " + styles.labelRed : '')} 
+                    htmlFor={name}
+                >
+                    {label}
+                </label>
+                <input
+                    type={(name !== 'pwd' && name !== 'repwd') ? 'text' : 'password'}
+                    name={name} 
+                    className={`flex1 ${styles.input} ${isError ? styles.inputRed : ''}`}
+                    id={name}
+                    size="30" 
+                    onChange={onChange}
+                    onBlur={onBlur}
+                />
+            </div>
+            {!!description && (
+                <>
+                    <div className={styles.descriptionIcon}></div>
+                    <div className={styles.description}>{description}</div>
+                </>
+            )}
         </div>
     )
 }

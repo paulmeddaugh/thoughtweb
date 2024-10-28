@@ -3,16 +3,25 @@ import { checkIfArrays, checkIfNoteProps, checkIfNumbers, checkIfString } from "
 
 const defaultConfig = { withCredentials: true };
 
-export const loginWithCredentials = async (username, password) => {
-    checkIfString({ username, password });
-    const body = new FormData();
-    body.append("username", username);
-    body.append("password", password);
-    return axios.post('/userValidate', body);
+export const loginWithEmailCredentials = async (email, password) => {
+    return loginWithCredentials(email, password);
+}
+
+export const loginWithUsernameCredentials = async (username, password) => {
+    return loginWithCredentials(username, password, false);
+}
+
+export const loginWithCredentials = async (emailOrUsername, password, usingEmail = true) => {
+    checkIfString({ emailOrUsername, password });
+    const body = usingEmail 
+        ? { email: emailOrUsername, password } 
+        : { username: emailOrUsername, password };
+    console.log('request', body, `/api/login/internal?loginWithUsername=${!usingEmail}`);
+    return axios.post(`/api/login/internal?loginWithUsername=${!usingEmail}`, body);
 }
 
 export const createNewUserOnBack = (user) => {
-    return axios.post('/api/users/register', user);
+    return axios.post('/api/users/createUser', user);
 }
 
 export const getCurrentUserFromBackend = () => {

@@ -1,18 +1,17 @@
 import styles from '../../styles/LoginComponentStyles/CreateAccount.module.css'; // Import css modules stylesheet as styles
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { createNewUserOnBack } from '../../axios/axios';
 import { invalidInputMessage } from '../../scripts/forms/validate';
-import useForm from '../../hooks/useForm';
 import TWForm from './TWForm';
 import { useState } from 'react';
 
-const LABELS = {
-    name: "Name",
-    usn: "Username",
-    email: "Email",
-    pwd: "Password",
-    repwd: "Confirm password",
-    reminder: "Reminder",
+const INPUT_META = {
+    name: { label: "Name" },
+    usn: { label: "Username" },
+    email: { label: "Email" },
+    pwd: { label: "Password", description: "Must contain an uppercase letter and be at least 8 characters long." },
+    repwd: { label: "Confirm password" },
+    reminder: { label: "Reminder" },
 }
 
 const inputPropertiesArray = Object
@@ -20,7 +19,8 @@ const inputPropertiesArray = Object
     .map(([name, validator]) =>
         ({
             name,
-            label: LABELS[name],
+            label: INPUT_META[name]?.label,
+            description: INPUT_META[name]?.description,
             validator,
             initialValue: "",
         })
@@ -39,9 +39,8 @@ const CreateAccount = () => {
         };
         console.log('newUser', newUser);
         createNewUserOnBack(newUser).then((response) => {
-            if (response.status === 201) {
-                alert("Successfully created!");
-                navigate('/');
+            if (response.status === 200) {
+                setNotification({ type: 'success', text: "Successfully created!" });
             }
         }).catch((error) => {
             if (String(error?.response?.data).startsWith('Proxy error')) {
@@ -49,7 +48,10 @@ const CreateAccount = () => {
             } else if (error?.response?.status === 403) {
                 alert(error?.response?.data);
             } else {
-                setNotification({ notifType: 'error', message: error });
+                // ASP.NET error handling
+                const data = error?.response?.data;
+                const text = (data ? Object.values(data).flat().join('\n') : error?.message);
+                setNotification({ type: 'error', text });
                 console.log(error);
             }
         });

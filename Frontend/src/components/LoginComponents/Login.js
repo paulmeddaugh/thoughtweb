@@ -2,9 +2,10 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styles from '../../styles/LoginComponentStyles/Login.module.css';
 import Notification from '../global/Notification';
+import { invalidInputMessage } from '../../scripts/forms/validate';
 
 const BASE_URL = `${window.location.protocol}//${window.location.host}`;
-const GOOGLE_LOGIN_URL = `${BASE_URL}/account/login-google`;
+const GOOGLE_LOGIN_URL = `${BASE_URL}/api/login/google`;
 
 const Login = ({ usernameValue, passwordValue, onUsernameChange, onPasswordChange, onSubmit, onOAuth2Login }) => {
     const usernameRef = useRef(null);
@@ -29,9 +30,11 @@ const Login = ({ usernameValue, passwordValue, onUsernameChange, onPasswordChang
             setNotificationProps({ type: 'error', text: error });
             focusRef.current.focus();
             e.preventDefault();
-        } else {
-            onSubmit(usernameValue, passwordValue);
+            return;
         }
+
+        const isEmail = !invalidInputMessage.email(usernameValue);
+        onSubmit(usernameValue, passwordValue, isEmail);
     }
 
     return (
@@ -87,7 +90,7 @@ const Login = ({ usernameValue, passwordValue, onUsernameChange, onPasswordChang
                             type="button" 
                             className="button"
                             id="login" 
-                            value="Login"
+                            value="Log In"
                             onClick={validateForm}
                         />
                     </div>
