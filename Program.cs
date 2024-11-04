@@ -1,58 +1,19 @@
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using backend.Models;
 using AspNetCore.Identity.Database;
 using AspNetCore.Identity.Extensions;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authentication;
-using System.Security.Claims;
+using backend.Services;
+using backend.Util;
+using backend.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var env = builder.Environment;
 var configuration = builder.Configuration;
 var services = builder.Services;
-
-services.AddEndpointsApiExplorer();
-services.AddSwaggerGen(option =>
-{
-    option.SwaggerDoc("v1", new OpenApiInfo { Title = "thoughtweb API", Version = "v1" });
-    option.MapType<CustomUser>(() => new OpenApiSchema
-    {
-        Type = "object",
-        Properties = new Dictionary<string, OpenApiSchema>
-        {
-            ["Name"] = new OpenApiSchema { Type = "string" },
-            ["Reminder"] = new OpenApiSchema { Type = "string" },
-        }
-    });
-    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Please enter a valid token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "Bearer"
-    });
-    option.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
-});
-services.AddControllersWithViews();
 
 // SQL Server
 if (!env.IsDevelopment()) {
@@ -99,17 +60,23 @@ services.Configure<IdentityOptions>(options =>
 
 services.AddDatabaseDeveloperPageExceptionFilter(); // Developer page exception filter (for migrations and errors during dev)
 
-// Identity service configuration
+// Identity services
 services.AddIdentityCore<CustomUser>()
+    .AddSignInManager<SignInManager<CustomUser>>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddApiEndpoints();
+
+services.AddSingleton<IAppSettingsService, AppSettingsService>();
+services.AddSingleton<IJWTTokens, JWTTokens>();
+
+services.AddControllers(options => 
+{
+    options.Filters.Add<CustomUserExceptionFilter>();
+});
 
 services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.BearerScheme;
-        // options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        // options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
         options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
     })
     .AddGoogle(GoogleDefaults.AuthenticationScheme, googleOptions =>
@@ -127,7 +94,35 @@ services.AddAuthentication(options =>
     .AddCookie(IdentityConstants.ExternalScheme);
     
 services.AddAuthorizationBuilder();
-services.AddAuthorization();
+
+services.AddEndpointsApiExplorer();
+services.AddSwaggerGen(option =>
+{
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "thoughtweb API", Version = "v1" });
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 // In production, the React files will be served from this directory
 services.AddSpaStaticFiles(configuration =>
@@ -160,7 +155,6 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// app.MapGroup("/api/users").MapIdentityApi<CustomUser>();
 app.MapControllers();
 
 // SPA

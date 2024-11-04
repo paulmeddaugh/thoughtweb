@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { ListGroupItem } from 'react-bootstrap';
-import { useSelected } from '../LoginProvider';
+import { useAppContent } from '../../context/appContent';
 import styles from '../../styles/NoteBox/NoteBoxNote.module.css';
 
 const isNoteNotSaved = (note) => String(note?.title)[0] === '﻿';
@@ -8,7 +8,7 @@ const isNoteActive = (selected, note, dragging) => selected.note?.id === note?.i
 
 const NoteBoxNote = ({ note, index, onSelect, onSelectDrag, onSelectDrop, onDelete, dragging, style }, ref) => {
 
-    const selected = useSelected();
+    const { selected } = useAppContent();
 
     const handleClick = (e) => onSelect?.(e, note, index);
     const handleDragStart = (e) => onSelectDrag?.(e, note, index);

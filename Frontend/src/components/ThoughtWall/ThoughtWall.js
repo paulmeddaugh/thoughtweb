@@ -1,13 +1,12 @@
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { binarySearch } from '../../scripts/utility/utility';
 import styles from '../../styles/ThoughtWall/ThoughtWall.module.css';
 import NoteWall from "./NoteWall";
 import Point from '../../scripts/notes/point';
 import Line from "./Line";
-import { useFilters, useGraph, useSelected, useSetSelected, useUserOrder } from "../LoginProvider";
+import { useAppContent } from "../../context/appContent";
 import { comparePositions } from "../../scripts/utility/customOrderingAsStrings";
-import { useSharedState } from "../../hooks/useGlobalState";
 import { WINDOW_WIDTH_TO_FILL } from "../../constants/constants";
 import { RED } from "../../constants/colors";
 import { 
@@ -19,6 +18,7 @@ import {
     NOTE_WALL_Y_START, 
     CENTER_LINE_X_OFFSET 
 } from "../../constants/constants";
+import { useNotebox } from "../../context/notebox";
 
 const filtersMap = {
     notebook: (note, nbId) => note.idNotebook === Number(nbId),
@@ -44,10 +44,7 @@ const getNoteWallGapFromUserOrderIndex = (graph, userOrder, userOrderIndex) => {
 
 const ThoughtWall = () => {
 
-    const graph = useGraph();
-    const selected = useSelected(), setSelected = useSetSelected();
-    const filters = useFilters();
-    const userOrder = useUserOrder();
+    const { graph, selected, setSelected, filters, userOrder } = useAppContent();
 
     const [independentNotes, setIndependentNotes] = useState([]);
     const scrollToMap = useRef(new Map()).current;
@@ -56,7 +53,7 @@ const ThoughtWall = () => {
 
     const journalWallRef = useRef(null);
 
-    const [isNoteboxPinned] = useSharedState('notebox/isPinned');
+    const { isPinned: isNoteboxPinned } = useNotebox();
 
     let navigate = useNavigate();
 

@@ -1,4 +1,4 @@
-## Running the Project
+# Running the Project
 To run the project from the root directory, run:
 ```
 cd backend/Frontend && yarn
@@ -11,7 +11,7 @@ dotnet run
 ### Changing The Environment Mode
 To change to either "Development" or "Production", run:
 ```
-export ASPNETCORE_ENVIRONMENT=<Development|Production>
+export ASPNETCORE_ENVIRONMENT="Development"|"Production"
 ```
 
 ### Testing Google SSO
@@ -19,6 +19,11 @@ To test Google SSO in development, run the following commands:
 ```
 dotnet user-secrets set "Authentication:Google:ClientId" "<client_id>"
 dotnet user-secrets set "Authentication:Google:ClientSecret" "<client_secret>"
+```
+
+### Generating Controllers
+```
+dotnet aspnet-codegenerator controller -name <ControllerName> -async -api -m <ModelClass> -dc ApplicationDbContext -outDir Controllers
 ```
 
 ### Helpful Resources
@@ -30,3 +35,4 @@ Google SSO: https://learn.microsoft.com/en-us/aspnet/core/security/authenticatio
 Google SSO Bearer Issue: https://stackoverflow.com/questions/78083217/asp-net-core-8-with-google-sign-in-statuscode-cannot-be-set-because-the-response
 SQL Server Connection Tutorial: https://learn.microsoft.com/en-us/dotnet/aspire/database/sql-server-integrations
 EF Core Database Migration Reverting: https://code-maze.com/efcore-how-to-revert-a-migration/
+JWT Access and Refresh Tokens: https://medium.com/@KumarHalder/token-based-authentication-in-asp-net-core-43e99aee0593

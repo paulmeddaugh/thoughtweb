@@ -1,7 +1,12 @@
 import axios from "axios";
 import { checkIfArrays, checkIfNoteProps, checkIfNumbers, checkIfString } from "../scripts/utility/errorHandling";
+import { isValidEmail } from "../scripts/utility/utility";
 
 const defaultConfig = { withCredentials: true };
+
+export const setAxiosBearerToken = (bearerToken) => {
+    axios.defaults.headers.common = { 'Authorization': `Bearer ${bearerToken}` };
+}
 
 export const loginWithEmailCredentials = async (email, password) => {
     return loginWithCredentials(email, password);
@@ -11,17 +16,21 @@ export const loginWithUsernameCredentials = async (username, password) => {
     return loginWithCredentials(username, password, false);
 }
 
-export const loginWithCredentials = async (emailOrUsername, password, usingEmail = true) => {
+export const loginWithCredentials = async (emailOrUsername, password) => {
     checkIfString({ emailOrUsername, password });
+    const usingEmail = isValidEmail(emailOrUsername);
     const body = usingEmail 
         ? { email: emailOrUsername, password } 
         : { username: emailOrUsername, password };
-    console.log('request', body, `/api/login/internal?loginWithUsername=${!usingEmail}`);
-    return axios.post(`/api/login/internal?loginWithUsername=${!usingEmail}`, body);
+    return axios.post(`/api/login`, body);
 }
 
+export const getGoogleAccessTokens = (jwt) => {
+    return axios.get(`/api/login/google-tokens?jwt=${jwt}`);
+};
+
 export const createNewUserOnBack = (user) => {
-    return axios.post('/api/users/createUser', user);
+    return axios.post('/api/user/create', user);
 }
 
 export const getCurrentUserFromBackend = () => {
@@ -37,8 +46,8 @@ export const updatePassword = (token, newPassword) => {
 }
 
 export const getJournalDataFromBack = async (userId) => {
-    checkIfNumbers({ userId });
-    return axios.get(`/api/users/${userId}/getJournal`, defaultConfig);
+    checkIfString({ userId });
+    return axios.get(`/api/user/journal`, defaultConfig);
 }
 
 export const createNoteOnBack = async (note) => {
@@ -89,5 +98,5 @@ export const updateOrderOnBack = async (noteId, position) => {
 }
 
 export const logoutOnBackend = () => {
-    return axios.get('/logout');
+    return axios.post('/api/logout');
 }

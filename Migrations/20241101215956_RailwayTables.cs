@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace backend.Migrations
 {
     /// <inheritdoc />
-    public partial class SpringBootUserTable : Migration
+    public partial class RailwayTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -65,164 +65,280 @@ namespace backend.Migrations
 
             migrationBuilder.RenameTable(
                 name: "AspNetUserTokens",
-                newName: "UserTokens");
+                newName: "userTokens");
 
             migrationBuilder.RenameTable(
                 name: "AspNetUsers",
-                newName: "Users");
+                newName: "users");
 
             migrationBuilder.RenameTable(
                 name: "AspNetUserRoles",
-                newName: "UserRoles");
+                newName: "userRoles");
 
             migrationBuilder.RenameTable(
                 name: "AspNetUserLogins",
-                newName: "UserLogins");
+                newName: "userLogins");
 
             migrationBuilder.RenameTable(
                 name: "AspNetUserClaims",
-                newName: "UserClaims");
+                newName: "userClaims");
 
             migrationBuilder.RenameTable(
                 name: "AspNetRoles",
-                newName: "Roles");
+                newName: "roles");
 
             migrationBuilder.RenameTable(
                 name: "AspNetRoleClaims",
-                newName: "RoleClaims");
+                newName: "roleClaims");
 
             migrationBuilder.RenameColumn(
                 name: "UserName",
-                table: "Users",
+                table: "users",
                 newName: "username");
 
             migrationBuilder.RenameColumn(
                 name: "Reminder",
-                table: "Users",
+                table: "users",
                 newName: "reminder");
 
             migrationBuilder.RenameColumn(
                 name: "Name",
-                table: "Users",
+                table: "users",
                 newName: "name");
 
             migrationBuilder.RenameColumn(
                 name: "Email",
-                table: "Users",
+                table: "users",
                 newName: "email");
 
             migrationBuilder.RenameColumn(
                 name: "Id",
-                table: "Users",
+                table: "users",
                 newName: "id");
 
             migrationBuilder.RenameIndex(
                 name: "IX_AspNetUserRoles_RoleId",
-                table: "UserRoles",
-                newName: "IX_UserRoles_RoleId");
+                table: "userRoles",
+                newName: "IX_userRoles_RoleId");
 
             migrationBuilder.RenameIndex(
                 name: "IX_AspNetUserLogins_UserId",
-                table: "UserLogins",
-                newName: "IX_UserLogins_UserId");
+                table: "userLogins",
+                newName: "IX_userLogins_UserId");
 
             migrationBuilder.RenameIndex(
                 name: "IX_AspNetUserClaims_UserId",
-                table: "UserClaims",
-                newName: "IX_UserClaims_UserId");
+                table: "userClaims",
+                newName: "IX_userClaims_UserId");
 
             migrationBuilder.RenameIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
-                table: "RoleClaims",
-                newName: "IX_RoleClaims_RoleId");
+                table: "roleClaims",
+                newName: "IX_roleClaims_RoleId");
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "date_created",
-                table: "Users",
+                table: "users",
                 type: "TEXT",
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
 
             migrationBuilder.AddPrimaryKey(
-                name: "PK_UserTokens",
-                table: "UserTokens",
+                name: "PK_userTokens",
+                table: "userTokens",
                 columns: new[] { "UserId", "LoginProvider", "Name" });
 
             migrationBuilder.AddPrimaryKey(
-                name: "PK_Users",
-                table: "Users",
+                name: "PK_users",
+                table: "users",
                 column: "id");
 
             migrationBuilder.AddPrimaryKey(
-                name: "PK_UserRoles",
-                table: "UserRoles",
+                name: "PK_userRoles",
+                table: "userRoles",
                 columns: new[] { "UserId", "RoleId" });
 
             migrationBuilder.AddPrimaryKey(
-                name: "PK_UserLogins",
-                table: "UserLogins",
+                name: "PK_userLogins",
+                table: "userLogins",
                 columns: new[] { "LoginProvider", "ProviderKey" });
 
             migrationBuilder.AddPrimaryKey(
-                name: "PK_UserClaims",
-                table: "UserClaims",
+                name: "PK_userClaims",
+                table: "userClaims",
                 column: "Id");
 
             migrationBuilder.AddPrimaryKey(
-                name: "PK_Roles",
-                table: "Roles",
+                name: "PK_roles",
+                table: "roles",
                 column: "Id");
 
             migrationBuilder.AddPrimaryKey(
-                name: "PK_RoleClaims",
-                table: "RoleClaims",
+                name: "PK_roleClaims",
+                table: "roleClaims",
                 column: "Id");
+
+            migrationBuilder.CreateTable(
+                name: "notebooks",
+                columns: table => new
+                {
+                    id = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    name = table.Column<string>(type: "TEXT", nullable: false),
+                    id_user = table.Column<string>(type: "TEXT", nullable: false),
+                    date_created = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    note_order = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_notebooks", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_notebooks_users_id_user",
+                        column: x => x.id_user,
+                        principalTable: "users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "notes",
+                columns: table => new
+                {
+                    id = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    title = table.Column<string>(type: "TEXT", nullable: false),
+                    text = table.Column<string>(type: "LONGTEXT", nullable: false),
+                    quotes = table.Column<string>(type: "LONGTEXT", nullable: false),
+                    id_notebook = table.Column<long>(type: "INTEGER", nullable: true),
+                    id_user = table.Column<string>(type: "TEXT", nullable: false),
+                    is_main = table.Column<bool>(type: "INTEGER", nullable: false),
+                    date_created = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    all_notes_position = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_notes", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_notes_notebooks_id_notebook",
+                        column: x => x.id_notebook,
+                        principalTable: "notebooks",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_notes_users_id_user",
+                        column: x => x.id_user,
+                        principalTable: "users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "connections",
+                columns: table => new
+                {
+                    id = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    id_note1 = table.Column<long>(type: "INTEGER", nullable: false),
+                    id_note2 = table.Column<long>(type: "INTEGER", nullable: false),
+                    id_user = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_connections", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_Connection_NoteId1",
+                        column: x => x.id_note1,
+                        principalTable: "notes",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Connection_NoteId2",
+                        column: x => x.id_note2,
+                        principalTable: "notes",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_connections_users_id_user",
+                        column: x => x.id_user,
+                        principalTable: "users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_connections_id_note1",
+                table: "connections",
+                column: "id_note1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_connections_id_note2",
+                table: "connections",
+                column: "id_note2");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_connections_id_user",
+                table: "connections",
+                column: "id_user");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_notebooks_id_user",
+                table: "notebooks",
+                column: "id_user");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_notes_id_notebook",
+                table: "notes",
+                column: "id_notebook");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_notes_id_user",
+                table: "notes",
+                column: "id_user");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_RoleClaims_Roles_RoleId",
-                table: "RoleClaims",
+                name: "FK_roleClaims_roles_RoleId",
+                table: "roleClaims",
                 column: "RoleId",
-                principalTable: "Roles",
+                principalTable: "roles",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_UserClaims_Users_UserId",
-                table: "UserClaims",
+                name: "FK_userClaims_users_UserId",
+                table: "userClaims",
                 column: "UserId",
-                principalTable: "Users",
+                principalTable: "users",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_UserLogins_Users_UserId",
-                table: "UserLogins",
+                name: "FK_userLogins_users_UserId",
+                table: "userLogins",
                 column: "UserId",
-                principalTable: "Users",
+                principalTable: "users",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_UserRoles_Roles_RoleId",
-                table: "UserRoles",
+                name: "FK_userRoles_roles_RoleId",
+                table: "userRoles",
                 column: "RoleId",
-                principalTable: "Roles",
+                principalTable: "roles",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_UserRoles_Users_UserId",
-                table: "UserRoles",
+                name: "FK_userRoles_users_UserId",
+                table: "userRoles",
                 column: "UserId",
-                principalTable: "Users",
+                principalTable: "users",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_UserTokens_Users_UserId",
-                table: "UserTokens",
+                name: "FK_userTokens_users_UserId",
+                table: "userTokens",
                 column: "UserId",
-                principalTable: "Users",
+                principalTable: "users",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
         }
@@ -231,87 +347,96 @@ namespace backend.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_RoleClaims_Roles_RoleId",
-                table: "RoleClaims");
+                name: "FK_roleClaims_roles_RoleId",
+                table: "roleClaims");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_UserClaims_Users_UserId",
-                table: "UserClaims");
+                name: "FK_userClaims_users_UserId",
+                table: "userClaims");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_UserLogins_Users_UserId",
-                table: "UserLogins");
+                name: "FK_userLogins_users_UserId",
+                table: "userLogins");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_UserRoles_Roles_RoleId",
-                table: "UserRoles");
+                name: "FK_userRoles_roles_RoleId",
+                table: "userRoles");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_UserRoles_Users_UserId",
-                table: "UserRoles");
+                name: "FK_userRoles_users_UserId",
+                table: "userRoles");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_UserTokens_Users_UserId",
-                table: "UserTokens");
+                name: "FK_userTokens_users_UserId",
+                table: "userTokens");
+
+            migrationBuilder.DropTable(
+                name: "connections");
+
+            migrationBuilder.DropTable(
+                name: "notes");
+
+            migrationBuilder.DropTable(
+                name: "notebooks");
 
             migrationBuilder.DropPrimaryKey(
-                name: "PK_UserTokens",
-                table: "UserTokens");
+                name: "PK_userTokens",
+                table: "userTokens");
 
             migrationBuilder.DropPrimaryKey(
-                name: "PK_Users",
-                table: "Users");
+                name: "PK_users",
+                table: "users");
 
             migrationBuilder.DropPrimaryKey(
-                name: "PK_UserRoles",
-                table: "UserRoles");
+                name: "PK_userRoles",
+                table: "userRoles");
 
             migrationBuilder.DropPrimaryKey(
-                name: "PK_UserLogins",
-                table: "UserLogins");
+                name: "PK_userLogins",
+                table: "userLogins");
 
             migrationBuilder.DropPrimaryKey(
-                name: "PK_UserClaims",
-                table: "UserClaims");
+                name: "PK_userClaims",
+                table: "userClaims");
 
             migrationBuilder.DropPrimaryKey(
-                name: "PK_Roles",
-                table: "Roles");
+                name: "PK_roles",
+                table: "roles");
 
             migrationBuilder.DropPrimaryKey(
-                name: "PK_RoleClaims",
-                table: "RoleClaims");
+                name: "PK_roleClaims",
+                table: "roleClaims");
 
             migrationBuilder.DropColumn(
                 name: "date_created",
-                table: "Users");
+                table: "users");
 
             migrationBuilder.RenameTable(
-                name: "UserTokens",
+                name: "userTokens",
                 newName: "AspNetUserTokens");
 
             migrationBuilder.RenameTable(
-                name: "Users",
+                name: "users",
                 newName: "AspNetUsers");
 
             migrationBuilder.RenameTable(
-                name: "UserRoles",
+                name: "userRoles",
                 newName: "AspNetUserRoles");
 
             migrationBuilder.RenameTable(
-                name: "UserLogins",
+                name: "userLogins",
                 newName: "AspNetUserLogins");
 
             migrationBuilder.RenameTable(
-                name: "UserClaims",
+                name: "userClaims",
                 newName: "AspNetUserClaims");
 
             migrationBuilder.RenameTable(
-                name: "Roles",
+                name: "roles",
                 newName: "AspNetRoles");
 
             migrationBuilder.RenameTable(
-                name: "RoleClaims",
+                name: "roleClaims",
                 newName: "AspNetRoleClaims");
 
             migrationBuilder.RenameColumn(
@@ -340,22 +465,22 @@ namespace backend.Migrations
                 newName: "Id");
 
             migrationBuilder.RenameIndex(
-                name: "IX_UserRoles_RoleId",
+                name: "IX_userRoles_RoleId",
                 table: "AspNetUserRoles",
                 newName: "IX_AspNetUserRoles_RoleId");
 
             migrationBuilder.RenameIndex(
-                name: "IX_UserLogins_UserId",
+                name: "IX_userLogins_UserId",
                 table: "AspNetUserLogins",
                 newName: "IX_AspNetUserLogins_UserId");
 
             migrationBuilder.RenameIndex(
-                name: "IX_UserClaims_UserId",
+                name: "IX_userClaims_UserId",
                 table: "AspNetUserClaims",
                 newName: "IX_AspNetUserClaims_UserId");
 
             migrationBuilder.RenameIndex(
-                name: "IX_RoleClaims_RoleId",
+                name: "IX_roleClaims_RoleId",
                 table: "AspNetRoleClaims",
                 newName: "IX_AspNetRoleClaims_RoleId");
 

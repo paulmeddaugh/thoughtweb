@@ -6,10 +6,12 @@ import Notebook from '../../scripts/notes/notebook';
 import EditorConnection from './EditorConnection';
 import AddConnection from './AddConnection';
 import { binarySearch, binaryInsert } from '../../scripts/utility/utility';
-import { useUserOrder, useSetUserOrder, useSelected, useSetSelected, useGraph, useSetGraph, useNotebooks, useSetNotebooks, useUserId } from '../LoginProvider';
-import { addMultipleConnsOnBack, createNotebookOnBack, createNoteOnBack, deleteMultipleConnsOnBack, updateNoteOnBack } from '../../axios/axios';
+import { useAppContent } from '../../context/appContent.js';
+import { addMultipleConnsOnBack, createNotebookOnBack, createNoteOnBack, deleteMultipleConnsOnBack, updateNoteOnBack } from '../../services/axios.js';
 import { Link } from 'react-router-dom';
 import { useSharedState } from '../../hooks/useGlobalState.js';
+import { useUser } from '../../context/user.js';
+import { useNotebox } from '../../context/notebox.js';
 
 const automaticallySave = false;
 
@@ -24,13 +26,21 @@ const connectionsWithWeightZero = (connections) => {
 	return connections?.filter(conn => conn.weight === 0);
 }
 
-const Editor = ({ onMount, newNoteId }) => {
-
-	const graph = useGraph(), setGraph = useSetGraph();
-	const userOrder = useUserOrder(), setUserOrder = useSetUserOrder();
-	const { note, index } = useSelected(), setSelected = useSetSelected();
-	const notebooks = useNotebooks(), setNotebooks = useSetNotebooks();
-	const userId = useUserId();
+const Editor = () => {
+	const { 
+		graph,
+		setGraph,
+		userOrder,
+		setUserOrder,
+		selected,
+		setSelected,
+		notebooks,
+		setNotebooks,
+		newNoteId
+	} = useAppContent();
+	const { note: selectedNote, index } = selected;
+	const { userId } = useUser();
+	const { isPinned: isNoteboxPinned } = useNotebox();
 
 	const [noteInEditor, setNoteInEditor] = useState(new Note());
 	const [noteInEditorIndex, setNoteInEditorIndex] = useState(-1);
@@ -46,12 +56,6 @@ const Editor = ({ onMount, newNoteId }) => {
 	const notebookRef = useRef(null)
 	const titleRef = useRef(null);
 	const textRef = useRef(null);
-
-	const [isNoteboxPinned] = useSharedState('notebox/isPinned');
-
-	useEffect(() => { // Focuses on title input when first mounting
-		onMount?.();
-	}, []);
 
 	useEffect(() => { // Stores the loading graph values for better performance in algorithms
 		// Skips component first mounting
@@ -88,19 +92,19 @@ const Editor = ({ onMount, newNoteId }) => {
 
 	useEffect(() => { // Updates editor values when a different note is selected
 		setNoteInEditor(new Note(
-			note?.id ? note.id : null,
-			note?.title ? note.title : '',
-			note?.text ? note.text : '',
-			note?.quotes ? note.quotes : '',
-			note?.idNotebook ? note.idNotebook : -1,
-			note?.main ? note.main : false,
-			note?.dateCreated ? note.dateCreated : 'No Date',
-			note?.allNotesPosition ? note.allNotesPosition : null,
+			selectedNote?.id ?? null,
+			selectedNote?.title ?? '',
+			selectedNote?.text ?? '',
+			selectedNote?.quotes ?? '',
+			selectedNote?.idNotebook ?? -1,
+			selectedNote?.main ?? false,
+			selectedNote?.dateCreated ?? 'No Date',
+			selectedNote?.allNotesPosition ?? null,
 		));
 		setNoteInEditorIndex(index);
-		setNotebookName(getNotebookName(note?.idNotebook) ?? '');
+		setNotebookName(getNotebookName(selectedNote?.idNotebook) ?? '');
 		setConnections(graph.getVertexNeighborsWithWeightZero(index)); // Format - [ { v: { id: _ } weight: _ }, etc. ]
-	}, [note, index, dataListRef]);
+	}, [selectedNote, index, dataListRef]);
 
 	useEffect(() => { // Marks note as unsaved if connections have changed
 		if (initialGraphValues.loadedSize !== false) onInputChange();
@@ -135,7 +139,7 @@ const Editor = ({ onMount, newNoteId }) => {
 			return obj.id > 0;
 		}));
 		
-		if (note?.id < 0) {
+		if (selectedNote?.id < 0) {
 			const firstNote = newGraph.getVertex(0);
 			setSelected({ note: firstNote ?? null, index: firstNote ? 0 : null });
 		}
@@ -144,8 +148,8 @@ const Editor = ({ onMount, newNoteId }) => {
 	}, []);
 
 	useUnmount(() => { // Prompts user to save note if it has been edited
-		if (note?.id && noteInEditor?.id && graph.indexOf(noteInEditor) !== -1) updateOnBackFront();
-	}, [note]);
+		if (selectedNote?.id && noteInEditor?.id && graph.indexOf(noteInEditor) !== -1) updateOnBackFront();
+	}, [selectedNote]);
 
 	const updateOnBackFront = (e) => {
 
@@ -198,7 +202,7 @@ const Editor = ({ onMount, newNoteId }) => {
 				idNotebook: Number(notebookId),
 			};
 
-			if (note?.id < 0) { // Adding a note
+			if (selectedNote?.id < 0) { // Adding a note
 
 				updatingNote.idUser = userId; // Add to backend first to get new note 'id'
 				createNoteOnBack(updatingNote).then((response) => {
@@ -479,9 +483,9 @@ const Editor = ({ onMount, newNoteId }) => {
 	const noteListWithoutConnections = () => { // O(log n * c)
 
 		let noteList = graph.getVertices();
-		noteList.splice((note?.id < 0) 
-			? initialGraphValues.loadedSize - 1 + Math.abs(note?.id) // Unsaved note: O(1)
-			: binarySearch(noteList, note?.id)[1], 1); // Removes current note id: O (log n)
+		noteList.splice((selectedNote?.id < 0) 
+			? initialGraphValues.loadedSize - 1 + Math.abs(selectedNote?.id) // Unsaved note: O(1)
+			: binarySearch(noteList, selectedNote?.id)[1], 1); // Removes current note id: O (log n)
 
 		if (connections) for (let conn of connections) { // Removes connection ids
             const index = binarySearch(noteList, conn.v.id)[1];
@@ -508,7 +512,7 @@ const Editor = ({ onMount, newNoteId }) => {
 					placeholder="Notebook"
 					value={notebookName}
 					onChange={onInputChange}
-					disabled={note === null}
+					disabled={selectedNote === null}
 				/>
 				<datalist id="notebookOptions" ref={dataListRef}>
 					{notebooks?.map((nb, index) => (
@@ -523,7 +527,7 @@ const Editor = ({ onMount, newNoteId }) => {
 			<div className={styles.editorAndConnections}>
 				<div 
 					id={styles.editor} 
-					className={(noteInEditor.main === undefined || noteInEditor.main || note === null) 
+					className={(noteInEditor.main === undefined || noteInEditor.main || selectedNote === null) 
 						? styles.editorMainColor 
 						: styles.editorStickyColor
 					}
@@ -539,7 +543,7 @@ const Editor = ({ onMount, newNoteId }) => {
 						onKeyDown={onTitleKeyDown}
 						onFocus={(e) => {if (noteInEditor.title === 'Untitled') selectAllText(e)}}
 						ref={titleRef}
-						disabled={note === null}
+						disabled={selectedNote === null}
 					/>
 					<div id={styles.dateCreated}>
 						{typeof noteInEditor?.dateCreated !== 'string'
@@ -558,7 +562,7 @@ const Editor = ({ onMount, newNoteId }) => {
 						onKeyDown={onTextKeyDown}
 						onFocus={(e) => {if (noteInEditor.text === '-') selectAllText(e)}}
 						ref={textRef}
-						disabled={note === null}
+						disabled={selectedNote === null}
 					/>
 					<textarea 
 						id={styles.quotes} 
@@ -566,7 +570,7 @@ const Editor = ({ onMount, newNoteId }) => {
 						placeholder="Quotes" 
 						value={noteInEditor.quotes ?? ''}
 						onChange={onInputChange}
-						disabled={note === null}
+						disabled={selectedNote === null}
 					/>
 					<div className={styles.radioRow}>
 						<input 
@@ -575,9 +579,9 @@ const Editor = ({ onMount, newNoteId }) => {
 							name="options-outlined" 
 							id="mainRadio"
 							autoComplete="off" 
-							checked={noteInEditor.main || note === null} 
+							checked={noteInEditor.main || selectedNote === null} 
 							onChange={mainToggle} 
-							disabled={note === null}
+							disabled={selectedNote === null}
 						/>
 						<label 
 							className="btn" 
@@ -594,9 +598,9 @@ const Editor = ({ onMount, newNoteId }) => {
 							name="options-outlined"
 							id="stickyRadio"
 							autoComplete="off" 
-							checked={!noteInEditor.main && note !== null} 
+							checked={!noteInEditor.main && selectedNote !== null} 
 							onChange={mainToggle} 
-							disabled={note === null}
+							disabled={selectedNote === null}
 						/>
 						<label 
 							className="btn" 
@@ -621,10 +625,10 @@ const Editor = ({ onMount, newNoteId }) => {
 						/>
 					))}
 					<AddConnection 
-						currentNoteId={note?.id}
+						currentNoteId={selectedNote?.id}
 						noteList={noteListWithoutConnections()}
 						onAddConnection={onAddConnection}
-						disabled={note === null}
+						disabled={selectedNote === null}
 						className={`${styles.connectionContainer} ${styles.add}`}
 						lineClassName={styles.connectionLine}
 					/>
@@ -635,10 +639,10 @@ const Editor = ({ onMount, newNoteId }) => {
 			<input 
 				type="button" 
 				id={styles.addUpdate}
-				className={`${note === null ? styles.addUpdateDisabled : styles.addUpdateEnabled} button`}
-				value={note === null ? 'No note' : note?.id < 0 ? "Create" : "Update"} 
+				className={`${selectedNote === null ? styles.addUpdateDisabled : styles.addUpdateEnabled} button`}
+				value={selectedNote === null ? 'No note' : selectedNote?.id < 0 ? "Create" : "Update"} 
 				onClick={updateOnBackFront}
-				disabled={note === null ? true : false}
+				disabled={selectedNote === null ? true : false}
 			/>
         </form>
     )

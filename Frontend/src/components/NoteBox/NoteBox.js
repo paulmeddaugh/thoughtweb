@@ -7,13 +7,13 @@ import ReorderingLine from './ReorderingLine';
 import { ListGroup } from 'react-bootstrap';
 import { binarySearch } from '../../scripts/utility/utility';
 import { comparePositions, positionAfter, positionBefore, positionBetween } from '../../scripts/utility/customOrderingAsStrings';
-import { useGraph, useSetGraph, useUserOrder, useSetUserOrder, useSelected, useSetSelected, 
-    useNotebooks, useSetNotebooks, useUserId, useSetFilters } from '../LoginProvider';
-import { createNotebookOnBack, deleteNotebookOnBack, deleteNoteOnBack, updateOrderOnBack } from '../../axios/axios';
-import { useSharedState } from '../../hooks/useGlobalState';
+import { useAppContent } from '../../context/appContent';
+import { createNotebookOnBack, deleteNotebookOnBack, deleteNoteOnBack, updateOrderOnBack } from '../../services/axios';
 import { DEFAULT_WIDTH, WINDOW_WIDTH_TO_FILL, SNAP_OVERREACH } from '../../constants/constants';
 import SearchBar from './SearchBar';
 import { useLocation } from 'react-router-dom';
+import { useNotebox } from '../../context/notebox';
+import { useUser } from '../../context/user';
 
 let noteboxWidth = window.innerWidth > WINDOW_WIDTH_TO_FILL ? DEFAULT_WIDTH : window.innerWidth + 1;
 
@@ -21,18 +21,21 @@ let resizing = false;
 
 const pinSrc = require("../../resources/pinIconUnfilled.png");
 const unpinSrc = require("../../resources/pinIconFilled.png");
-const filterIcon = require("../../resources/filterIcon.png");
+// const filterIcon = require("../../resources/filterIcon.png");
 
 const NoteBox = () => {
 
-    const graph = useGraph(), setGraph = useSetGraph();
-    const userOrder = useUserOrder(), setUserOrder = useSetUserOrder();
-    const notebooks = useNotebooks(), setNotebooks = useSetNotebooks();
-    const selected = useSelected(), setSelected = useSetSelected();
-    const userId = useUserId();
-    const setFilters = useSetFilters();
+    const { 
+        graph, setGraph, 
+        userOrder, setUserOrder, 
+        notebooks, setNotebooks, 
+        selected, setSelected, 
+        setFilters 
+    } = useAppContent();
+    const { userId } = useUser();
+    const { isPinned, setPinned } = useNotebox();
 
-    const [isPinned, setPinned] = useSharedState('notebox/isPinned');
+    // const [isPinned, setPinned] = useSharedState('notebox/isPinned');
 
     const [searchVal, setSearchVal] = useState('');
     const [areSearchResults, setSearchResults] = useState(true);
@@ -56,7 +59,6 @@ const NoteBox = () => {
     const location = useLocation();
 
     useEffect(() => {
-
         infobox.current.style.width = noteboxWidth + 'px';
         const onResize = (e) => {
             if (!resizing) return;
@@ -69,7 +71,8 @@ const NoteBox = () => {
 
     useEffect(() => {
         setSearchResults(graph.size());
-    }, [graph]);
+        setPinned(!(!graph.size() && window.innerWidth < WINDOW_WIDTH_TO_FILL));
+    }, [graph, setPinned]);
 
     useEffect(() => {
         if (isPinned) {
@@ -419,7 +422,7 @@ const NoteBox = () => {
                         id={styles.noNotes} 
                         className={areSearchResults ? styles.searchResults : styles.noSearchResults}
                     >
-                        No notes found. 
+                        I have no notes.
                     </div>
 
                     {graph.getVertices()?.sort((n1, n2) => comparePositions(n2.allNotesPosition ?? '!', n1.allNotesPosition ?? '!'))

@@ -9,8 +9,10 @@ using Microsoft.AspNetCore.Identity;
 using AspNetCore.Identity.Database;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal;
-using Models.CustomUser;
 using Microsoft.Identity.Client;
+using backend.Util;
+using Microsoft.AspNetCore.Authorization;
+using System.Net;
 
 namespace backend.Controllers
 {
@@ -18,52 +20,74 @@ namespace backend.Controllers
     public class LogInController : Controller
     {
 
-        private readonly UserManager<CustomUser> _userManager = null;
-        private readonly SignInManager<CustomUser> _signInManager = null;
+        private readonly UserManager<CustomUser> _userManager;
+        private readonly SignInManager<CustomUser> _signInManager;
+        private readonly IJWTTokens _jwtTokens;
 
-        public LogInController (UserManager<CustomUser> userManager, SignInManager<CustomUser> signInManager)
-        {
+        public LogInController (
+            UserManager<CustomUser> userManager, 
+            SignInManager<CustomUser> signInManager, 
+            IJWTTokens jwtTokens
+        ) {
             _userManager = userManager;
             _signInManager = signInManager;
+            _jwtTokens = jwtTokens;
         }
 
-        [HttpPost("internal")]
-        public async void Login ([FromBody] CustomUserLogin login, [FromQuery] bool? loginWithUsername)
+        [HttpPost]
+        public async Task Login ([FromBody] CustomUserLogin login)
         {
+            // LOG IN ISN'T RECOGNIZED BY IDENTITY
+
+            bool usingEmail = !string.IsNullOrEmpty(login.Email) || string.IsNullOrEmpty(login.UserName);
+            if (usingEmail && string.IsNullOrEmpty(login.Email))
+            {
+                throw new CustomUserException("An email or username is required to login.");
+            }
+
             _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
-            try {
-                var usingEmail = loginWithUsername != true || login.UserName == null;
-                var username = usingEmail
-                    ? (await _userManager.FindByEmailAsync(login.Email))?.UserName
-                    : login.UserName;
+            var emailResult = usingEmail
+                ? await _userManager.FindByEmailAsync(login.Email)
+                : null;
 
-                var result = await _signInManager.PasswordSignInAsync(username, login.Password, isPersistent: false, lockoutOnFailure: true);
-                if (!result.Succeeded)
-                {
-                    // return Unauthorized(result.ToString());
-                }
-            } catch (Exception e) {
-                Console.WriteLine(e);
+            if (usingEmail && emailResult == null) {
+                throw new CustomUserException("The email provided does not belong to any account.");
+            }
+
+            var username = usingEmail
+                ? emailResult.UserName
+                : login.UserName;
+
+            var result = await _signInManager.PasswordSignInAsync(username, login.Password, isPersistent: false, lockoutOnFailure: true);
+            if (!result.Succeeded)
+            {
+                throw new CustomUserException("Invalid credentials.", HttpStatusCode.Unauthorized);
             }
         }
 
         [HttpGet("google")]
         public IActionResult GoogleLogin(string returnUrl = "/")
         {
-            var redirectUrl = Url.Action(nameof(ExternalSignIn), "LogIn", new { returnUrl });
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(GoogleDefaults.AuthenticationScheme, redirectUrl);
+            var jwtParam = (returnUrl.Contains('?') ? "&" : "?")
+                + $"jwt={_jwtTokens.GenerateEncodedToken(DateTime.Now.AddMinutes(1))}";
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(GoogleDefaults.AuthenticationScheme, returnUrl + jwtParam);
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
-        [HttpGet("external")]
-        async public void ExternalSignIn(string returnUrl = "/")
+        [AllowAnonymous]
+        [HttpGet("google-tokens")]
+        async public Task GoogleLoginTokens(string jwt)
         {
             _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
+            if (!_jwtTokens.ValidateToken(jwt)) {
+                throw new CustomUserException("Token is invalid.", HttpStatusCode.Unauthorized);
+            }
+
             // Get the info from the External Cookie
             var info = await _signInManager.GetExternalLoginInfoAsync() 
-                ?? throw new InvalidOperationException("ExternalLoginInfo missing");
+                ?? throw new CustomUserException("ExternalLoginInfo missing");
 
             // Sign in the user with this external login provider if the user already has a login.
             var result =
@@ -83,7 +107,6 @@ namespace backend.Controllers
                     await _signInManager.SignInAsync(existingUser!, props);
 
                     // The signInManager already produced the needed response in the form of bearer token.
-                    // return LocalRedirect(returnUrl);
                 } else {
 
                     // The user does not have an account yet => create an account.
@@ -102,72 +125,24 @@ namespace backend.Controllers
                             await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
 
                             // The signInManager already produced the needed response in the form of bearer token.
-                            // return LocalRedirect(returnUrl);
                         }
                     }
                 }
             } catch (Exception e) {
                 if (e.Message.Contains("Headers are read-only, response has already started.")) {
-                    // Fine
+                    // This is fine
                 } else {
                     Console.WriteLine(e);
-                    throw;
+                    throw new CustomUserException(e.Message);
                 }
             }
         }
 
-        [HttpGet("login-google-response")]
-        public async Task<IActionResult> GoogleResponse(string returnUrl = "/logged-in")
+        [HttpPost("/api/logout")]
+        public IActionResult Logout()
         {
-            Console.WriteLine("signin-google");
-            var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
-            if (!result.Succeeded)
-            {
-                // return RedirectToAction(nameof(GoogleLogin));
-                return BadRequest("Failed");
-            }
-
-            // Optionally, you can handle user info here
-            var claims = result.Principal?.Identities.FirstOrDefault()?.Claims;
-            // Extract user info from claims and use it in your app
-            var info = claims.Select(claim => new {
-                claim.Issuer,
-                claim.OriginalIssuer,
-                claim.Type,
-                claim.Value,
-            });
-            // return LocalRedirect(returnUrl);
-            return Json(info);
-
-            // var info = await _signInManager.GetExternalLoginInfoAsync();
-            // if (info == null) return Unauthorized();
-
-            // // Try to sign in the user with the external provider
-            // var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
-            // if (result.Succeeded)
-            // {
-            //     // Get the user
-            //     var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-
-            //     // Issue the token using Identity's Bearer token mechanism
-            //     var token = await _signInManager.CreateUserPrincipalAsync(user);
-            //     return Ok(new { Token = token });
-            // }
-
-            // // If user does not exist, create a new account
-            // var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-            // var user = new CustomUser { UserName = email, Email = email };
-            // var identityResult = await _userManager.CreateAsync(user);
-            // if (identityResult.Succeeded)
-            // {
-            //     await _userManager.AddLoginAsync(user, info);
-
-            //     // Issue the token after the new user is created
-            //     var token = await _signInManager.CreateUserPrincipalAsync(user);
-            //     return Ok(new { Token = token });
-            // }
-
-            // return BadRequest("Unable to create account.");
+            // Invalidate sign in token
+            return Ok("Logged out");
         }
     }
 }

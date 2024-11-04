@@ -1,6 +1,6 @@
 import {
-    FC,
-    ReactNode,
+    // FC,
+    // ReactNode,
     createContext,
     useContext,
     useState,
@@ -10,7 +10,7 @@ import {
 const _Map = () => new Map();
 const Context = createContext(_Map());
 
-export const Provider = ({ children }) =>
+export const GlobalStateProvider = ({ children }) =>
     <Context.Provider value={_Map()}>{children}</Context.Provider>;
 
 const useContextProvider = (key) => {

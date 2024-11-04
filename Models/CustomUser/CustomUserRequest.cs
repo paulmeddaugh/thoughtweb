@@ -1,4 +1,4 @@
-namespace Models.CustomUser;
+namespace AspNetCore.Identity.Database;
 
 public class CustomUserRequest
 {

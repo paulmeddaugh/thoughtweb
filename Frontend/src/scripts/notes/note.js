@@ -1,4 +1,5 @@
 import { checkIfNoteProps } from "../utility/errorHandling.js";
+import { stringFromSQL } from "../utility/utility.js";
 
 export default class Note {
     id = null;
@@ -62,5 +63,19 @@ export default class Note {
         this.setText(text);
         this.setQuotes(quotes);
         this.setMain(isMain);
+    }
+
+    static fromJournalEndpoint (noteData) {
+        const { id, title, text, quotes, idNotebook, isMain, dateCreated, allNotesPosition } = noteData;
+        return new Note(
+            id, 
+            stringFromSQL(title), 
+            stringFromSQL(text), 
+            stringFromSQL(quotes), 
+            idNotebook,
+            isMain, 
+            dateCreated, 
+            allNotesPosition
+        );
     }
 }

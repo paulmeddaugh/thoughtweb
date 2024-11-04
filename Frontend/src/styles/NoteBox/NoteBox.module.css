@@ -5,7 +5,7 @@
 
 #infobox {
     border-right: 1px solid grey;
-    background: lightgray;
+    background-color: rgb(216, 216, 216);
     height: 100%;
     transition: 1s ease;
     display: flex;
@@ -22,10 +22,14 @@
 }
 
 #unpin {
-    padding: 2px;
-    margin-left: 6px;
-    margin-right: -1px;
+    padding: 10px;
     display: inherit;
+    border-left: 1px solid lightgrey;
+}
+
+#unpin:hover {
+    background-color: var(--notebox-input-hover-background-color);
+    cursor: pointer;
 }
 
 #unpin:hover img {
@@ -90,6 +94,7 @@ img {
 
 #noteContainer {
     overflow-y: auto;
+    height: 100%;
 }
 
 .list-group-item {
@@ -98,9 +103,9 @@ img {
 }
 
 #noNotes {
-    width: 100%;
-    text-align: center;
-    padding: 6px;
+    margin: auto;
+    font: 700 1rem Corbel Light;
+    color: dimgrey;
 }
 
 #reorderingNoteContainer {

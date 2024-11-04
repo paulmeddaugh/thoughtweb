@@ -18,7 +18,7 @@ export default function SearchBar ({ value, onChange, optionsList, children }) {
                     type="text" 
                     list='noteOptions'
                     id={styles.searchInput} 
-                    placeholder="Search by title, text"
+                    placeholder="Search by text or title"
                     value={value ?? ''}
                     onChange={onChange}
                     ref={inputRef}

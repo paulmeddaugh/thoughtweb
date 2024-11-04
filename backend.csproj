@@ -9,6 +9,7 @@
     <UserSecretsId>aspnet-test_charp-041a0130-e7c2-480d-be0b-7e4982433815</UserSecretsId>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- <Nullable>enable</Nullable> -->
   </PropertyGroup>
 
   <ItemGroup>

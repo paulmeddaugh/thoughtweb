@@ -1,5 +1,5 @@
 import appStyles from '../../styles/App.module.css';
-import styles from '../../styles/LoginComponentStyles/Loading.module.css';
+import styles from '../../styles/global/Loading.module.css';
 import { justNotebookPath } from '../../resources/svgPaths';
 import { motion, useAnimate } from 'framer-motion';
 import { useEffect, useState } from 'react';
@@ -22,8 +22,8 @@ const MARGIN_FROM_BORDER = 2;
 
 const JUST_NOTEBOOK_WIDTH_FROM = 390;
 const JUST_NOTEBOOK_HEIGHT_FROM = 514;
-const JUST_NOTEBOOK_WIDTH_TO = 273;
-const JUST_NOTEBOOK_HEIGHT_TO = 359.8;
+// const JUST_NOTEBOOK_WIDTH_TO = 273;
+// const JUST_NOTEBOOK_HEIGHT_TO = 359.8;
 
 const linearLineX1 = memoize((i) => {
     return Math.max(-MARGIN_FROM_BORDER, -window.innerWidth + (window.innerWidth / ANIMATION_LINES_COUNT * 2) * i);
@@ -41,15 +41,16 @@ const linearLinesPath = svgPathFromPreloaderLines(
 const startAtFirstPoint = Array.from({ length: ANIMATION_LINES_COUNT }, () => Math.round(Math.random()));
 
 const manipulatedJustNotebookPath = translatePath(
-    scalePathTo(
-        justNotebookPath, 
-        JUST_NOTEBOOK_WIDTH_FROM, 
-        JUST_NOTEBOOK_HEIGHT_FROM, 
-        JUST_NOTEBOOK_WIDTH_TO, 
-        JUST_NOTEBOOK_HEIGHT_TO
-    ),
-    window.innerWidth / 2 - (JUST_NOTEBOOK_WIDTH_TO / 2),
-    window.innerHeight / 2 - (JUST_NOTEBOOK_HEIGHT_TO / 2),
+    // scalePathTo(
+    //     justNotebookPath, 
+    //     JUST_NOTEBOOK_WIDTH_FROM, 
+    //     JUST_NOTEBOOK_HEIGHT_FROM, 
+    //     JUST_NOTEBOOK_WIDTH_TO, 
+    //     JUST_NOTEBOOK_HEIGHT_TO
+    // ),
+    justNotebookPath,
+    window.innerWidth / 2 - (JUST_NOTEBOOK_WIDTH_FROM / 2),
+    window.innerHeight / 2 - (JUST_NOTEBOOK_HEIGHT_FROM / 2),
 );
 
 const thoughtwebDraw = {
@@ -121,13 +122,25 @@ const Loading = ({ status, linkText, linkOnClick, icon = 0, startExitAnimation, 
                 thoughtwebAnimate(thoughtwebContainer.current, thoughtwebDraw.move)
             }
         }
-    }, [startExitAnimation, startAnimationFinish.allComplete]);
+    }, [startExitAnimation, startAnimationFinish.allComplete, icon, onFinishExitAnimation, thoughtwebAnimate, thoughtwebContainer]);
 
-    if (icon !== 2) {
+    if (icon === 3) {
+        return (
+            <div 
+                className={appStyles.fullSize} 
+                style={{ background: `radial-gradient(${BACKGROUND_BLUE} 50%, ${DARK_BACKGROUND_BLUE})` }}
+                {...props}
+            >
+                <div className={`${styles.onlyText} ${styles.lightText}`}>{status}</div>
+                <div className={styles.link} onClick={linkOnClick}>{linkText}</div>
+                {children}
+            </div>
+        );
+    } else if (icon !== 2) {
         return (
             <div className={`${appStyles.fullSize} ${styles.container}`} {...props}>
                 <div className={iconMap[icon]} />
-                <div className={styles.text}>{status}</div>
+                <div className={`${styles.text} ${styles.darkText}`}>{status}</div>
                 <div className={styles.link} onClick={linkOnClick}>{linkText}</div>
                 {children}
             </div>

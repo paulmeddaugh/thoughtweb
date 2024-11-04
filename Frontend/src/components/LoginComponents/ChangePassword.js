@@ -1,7 +1,7 @@
 import styles from '../../styles/LoginComponentStyles/ChangePassword.module.css';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useRef, useState } from 'react';
-import { updatePassword } from '../../axios/axios';
+import { updatePassword } from '../../services/axios';
 import { invalidInputMessage } from '../../scripts/forms/validate';
 import Notification from '../global/Notification';
 

@@ -1,9 +1,8 @@
 import styles from '../../styles/LoginComponentStyles/CreateAccount.module.css'; // Import css modules stylesheet as styles
-import { useNavigate } from 'react-router-dom';
-import { createNewUserOnBack } from '../../axios/axios';
-import { invalidInputMessage } from '../../scripts/forms/validate';
 import TWForm from './TWForm';
 import { useState } from 'react';
+import { createNewUserOnBack } from '../../services/axios';
+import { invalidInputMessage } from '../../scripts/forms/validate';
 
 const INPUT_META = {
     name: { label: "Name" },
@@ -27,7 +26,6 @@ const inputPropertiesArray = Object
     );
 
 const CreateAccount = () => {
-    const navigate = useNavigate();
     const [notification, setNotification] = useState(null);
     const onSubmit = (values) => {
         const newUser = {

@@ -3,7 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using backend.Models;
+using backend.Contexts;
 
 #nullable disable
 
@@ -93,7 +93,7 @@ namespace backend.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("users", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -119,7 +119,7 @@ namespace backend.Migrations
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("roles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -142,7 +142,7 @@ namespace backend.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("RoleClaims", (string)null);
+                    b.ToTable("roleClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -165,7 +165,7 @@ namespace backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserClaims", (string)null);
+                    b.ToTable("userClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -187,7 +187,7 @@ namespace backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLogins", (string)null);
+                    b.ToTable("userLogins", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -202,7 +202,7 @@ namespace backend.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("UserRoles", (string)null);
+                    b.ToTable("userRoles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -221,7 +221,123 @@ namespace backend.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("UserTokens", (string)null);
+                    b.ToTable("userTokens", (string)null);
+                });
+
+            modelBuilder.Entity("backend.Models.Note.Connection", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("id");
+
+                    b.Property<long>("IdNote1")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("id_note1");
+
+                    b.Property<long>("IdNote2")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("id_note2");
+
+                    b.Property<string>("IdUser")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id_user");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdNote1");
+
+                    b.HasIndex("IdNote2");
+
+                    b.HasIndex("IdUser");
+
+                    b.ToTable("connections");
+                });
+
+            modelBuilder.Entity("backend.Models.Note.Note", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("date_created");
+
+                    b.Property<string>("GlobalOrder")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("all_notes_position");
+
+                    b.Property<long?>("IdNotebook")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("id_notebook");
+
+                    b.Property<string>("IdUser")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id_user");
+
+                    b.Property<bool>("IsMain")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("is_main");
+
+                    b.Property<string>("Quotes")
+                        .IsRequired()
+                        .HasColumnType("LONGTEXT")
+                        .HasColumnName("quotes");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("LONGTEXT")
+                        .HasColumnName("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdNotebook");
+
+                    b.HasIndex("IdUser");
+
+                    b.ToTable("notes");
+                });
+
+            modelBuilder.Entity("backend.Models.Notebook.Notebook", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("date_created");
+
+                    b.Property<string>("IdUser")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id_user");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("name");
+
+                    b.Property<string>("NoteOrder")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("note_order");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdUser");
+
+                    b.ToTable("notebooks");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -273,6 +389,84 @@ namespace backend.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("backend.Models.Note.Connection", b =>
+                {
+                    b.HasOne("backend.Models.Note.Note", "Note1")
+                        .WithMany("ConnectionsAsNote1")
+                        .HasForeignKey("IdNote1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Connection_NoteId1");
+
+                    b.HasOne("backend.Models.Note.Note", "Note2")
+                        .WithMany("ConnectionsAsNote2")
+                        .HasForeignKey("IdNote2")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Connection_NoteId2");
+
+                    b.HasOne("AspNetCore.Identity.Database.CustomUser", "User")
+                        .WithMany("Connections")
+                        .HasForeignKey("IdUser")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Note1");
+
+                    b.Navigation("Note2");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Models.Note.Note", b =>
+                {
+                    b.HasOne("backend.Models.Notebook.Notebook", "Notebook")
+                        .WithMany("Notes")
+                        .HasForeignKey("IdNotebook");
+
+                    b.HasOne("AspNetCore.Identity.Database.CustomUser", "User")
+                        .WithMany("Notes")
+                        .HasForeignKey("IdUser")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Notebook");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Models.Notebook.Notebook", b =>
+                {
+                    b.HasOne("AspNetCore.Identity.Database.CustomUser", "User")
+                        .WithMany("Notebooks")
+                        .HasForeignKey("IdUser")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AspNetCore.Identity.Database.CustomUser", b =>
+                {
+                    b.Navigation("Connections");
+
+                    b.Navigation("Notebooks");
+
+                    b.Navigation("Notes");
+                });
+
+            modelBuilder.Entity("backend.Models.Note.Note", b =>
+                {
+                    b.Navigation("ConnectionsAsNote1");
+
+                    b.Navigation("ConnectionsAsNote2");
+                });
+
+            modelBuilder.Entity("backend.Models.Notebook.Notebook", b =>
+                {
+                    b.Navigation("Notes");
                 });
 #pragma warning restore 612, 618
         }

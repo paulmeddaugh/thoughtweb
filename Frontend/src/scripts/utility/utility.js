@@ -201,3 +201,7 @@ export const fillObjectWithValues = (object, fillFunction) => {
             return newObj;
         }, {})
 }
+
+export const isValidEmail = (email) => {
+    return /^[\w.]+@\w+\.\w+$/.test(email);
+}

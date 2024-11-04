@@ -11,20 +11,20 @@ export default function useForm (initialState, stateValidators) {
     const [formState, setFormState] = useState(initialState);
     const formValidators = useRef(stateValidators).current;
     const [formErrors, setFormErrors] = useState( // fill with errors initially
-        fillObjectWithValues(initialState, (key) => stateValidators[key]?.(initialState[key]))
+        fillObjectWithValues(initialState, (key) => stateValidators?.[key]?.(initialState[key]))
     );
     const [touched, setTouched] = useState(fillObjectWithValues(initialState, () => false));
     const onFormInputChange = (e) => {
         const { name, value, } = e.target;
         setFormState(prev => {
             const newFormState = { ...prev, [name]: value };
-            setFormErrors(prev => ({ ...prev, [name]: formValidators[name](value, newFormState) }));
+            setFormErrors(prev => ({ ...prev, [name]: formValidators?.[name]?.(value, newFormState) ?? null }));
             return newFormState;
         })
     };
     const onFormInputBlur = (e) => {
         const { name, value } = e.target;
-        setFormErrors(prev => ({ ...prev, [name]: formValidators[name](value, formState) }));
+        setFormErrors(prev => ({ ...prev, [name]: formValidators?.[name]?.(value, formState) ?? null }));
         setTouched(prev => ({ ...prev, [name]: true }));
     }
     const touchAll = () => {

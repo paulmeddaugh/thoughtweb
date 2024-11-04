@@ -75,7 +75,7 @@ div.center {
     width: 100%;
     max-width: 146px;
     padding-left: 6px;
-    background-color: #0c024288;
+    background-color: #0c0242; /* #0c024288; */
 }
 
 .label.labelRed {
@@ -141,7 +141,7 @@ div.center {
     border-style: none;
     border: 2px solid rgb(0, 0, 90);
     border-radius: 3px;
-    font: 800 16px Corbel Light;
+    font: 800 1rem Corbel Light;
 }
 
 .submit:hover {

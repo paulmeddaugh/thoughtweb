@@ -1,110 +1,53 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { positionAfter } from './scripts/utility/customOrderingAsStrings';
-import { LoginProvider } from './components/LoginProvider';
-import { useSharedState } from './hooks/useGlobalState';
-import { usePreload } from './hooks/usePreload.js';
-import { loginWithCredentials, getCurrentUserFromBackend, logoutOnBackend } from './axios/axios';
-import { NO_NOTES_POSITION_BEGIN, WINDOW_WIDTH_TO_FILL } from './constants/constants';
+import { useAppContent } from './context/appContent.js';
+import { NO_NOTES_POSITION_BEGIN } from './constants/constants';
 import styles from './styles/App.module.css';
 import Login from './components/LoginComponents/Login.js';
 import CreateAccount from './components/LoginComponents/CreateAccount.js';
 import ForgotPassword from './components/LoginComponents/ForgotPassword';
 import Header from './components/Header';
 import NoteBoxLayout from './components/NoteBox/NoteBoxLayout';
-import loadJournal from "./scripts/graph/loadJournal.js";
 import Editor from './components/Editor/Editor';
 import CreateNoteButton from './components/Editor/CreateNoteButton';
 import Account from './components/Account';
 import ThoughtWall from './components/ThoughtWall/ThoughtWall';
-import Loading from './components/LoginComponents/Loading';
 import Note from './scripts/notes/note';
 import UpdatePassword from './components/LoginComponents/ChangePassword';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/universalStyles.css';
 
-// preload images
-import background from "./resources/backgroundWithoutVignette.png";
-import backgroundPortrait from "./resources/backgroundPortrait.jpg";
-import justNotebook from "./resources/justNotebook.png";
-import journalBackground from "./resources/journalBackground2.png";
-import accountBackground from "./resources/accountBackground2 - desktop.png";
-import pinIconUnfilled from "./resources/pinIconUnfilled.png";
-import pinIconFilled from "./resources/pinIconFilled.png";
-import journalGif from "./resources/loadingImages/journalOpen2.gif";
-import journalClosed from "./resources/loadingImages/journalClosed.png";
-import Fader from './components/global/Fader.js';
+import { NoteboxProvider } from './context/notebox.js';
+import useForm from './hooks/useForm.js';
+import { loginValidators } from './scripts/forms/validate.js';
+import { useUser } from './context/user.js';
 
-const preloading = {
-    images: [
-        background, 
-        backgroundPortrait, 
-        justNotebook,
-        journalBackground, 
-        accountBackground, 
-        pinIconUnfilled, 
-        pinIconFilled,
-        journalGif,
-        journalClosed
-    ],
-    fonts: [
-        'Abuget',
-        'Corbel',
-        'Corbel Light'
-    ]
-};
+const LoggedOutStack = ({ children }) => {
+    const { formState, formErrors, onFormInputChange } = useForm({ usn: '', pwd: '' }, loginValidators);
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/login" element={
+                    <Login 
+                        formState={formState}
+                        formErrors={formErrors}
+                        onFormStateChange={onFormInputChange}
+                    />
+                } />
+                <Route path="/createAccount/*" element={<CreateAccount />} />
+                <Route path="/forgotPassword/*" element={<ForgotPassword />} />
+                <Route path="/changePassword/*" element={<UpdatePassword />} />
+                <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+        </BrowserRouter> 
+    );
+}
 
-const App = () => {
+const LoggedInStack = ({ children }) => {
+    const { graph, setGraph, userOrder, setUserOrder, setSelected, newNoteId, setNewNoteId } = useAppContent();
 
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-
-    const { isPreloaded, preloadComponents } = usePreload(preloading);
-    const [isLoadingScreenFading, setLoadingScreenFading] = useState(false);
-
-    const [user, setUser] = useState(null);
-    const [graph, setGraph] = useState(null);
-    const [userOrder, setUserOrder] = useState([]);
-    const [notebooks, setNotebooks] = useState([]);
-    const [selected, setSelected] = useState({}); // format: { note: ___, index: ___ }
-    const [loading, setLoading] = useState({ icon: 2 });
-    const [newNoteId, setNewNoteId] = useState(-1);
-
-    const [ ,setPinned] = useSharedState('notebox/isPinned', true);
-
-    const headerRef = useRef(null);
-
-    useEffect(() => {
-        const queryParameters = new URLSearchParams(window.location.search)
-        const oauth = queryParameters.get("usingOauth");
-
-        if (oauth) {
-            onOAuth2Login?.();
-        }
-    }, []);
-
-    useEffect(() => {
-        if (user?.id) {
-            loadJournal(user.id, (g, nbs, userOrder) => {
-
-                nbs.unshift({ name: 'All Notebooks' });
-                setNotebooks(nbs);
-
-                const firstNoteGraphIndex = userOrder[0]?.graphIndex;
-                if (firstNoteGraphIndex) {
-                    setSelected({ note: g.getVertex(firstNoteGraphIndex), index: firstNoteGraphIndex });
-                }
-                setPinned(!(!g.size() && window.innerWidth < WINDOW_WIDTH_TO_FILL));
-
-                setUserOrder(userOrder);
-                setGraph(g);
-
-                setLoading(false);
-            });
-        }
-    }, [user]);
-
-    const createNoteClick = (e, prevRoutePath) => {
+    const handleCreateNoteClick = useCallback((e, prevRoutePath) => {
         // Determines new ordering value of the new note
         const newPosition = userOrder.length !== 0 ? 
               positionAfter(userOrder[userOrder.length - 1]?.order) 
@@ -123,154 +66,42 @@ const App = () => {
 
         setNewNoteId(newId - 1); // Decrements new id count
         setSelected({ note: newNote, index: graph.size() - 1 });
-    }
-
-    const onLoginSubmit = (username, password, isEmail) => {
-        setLoading({ status: 'Loading...', icon: 0 });
-
-        loginWithCredentials(username, password, isEmail).then(async response => {
-            console.log('response', response);
-            const authData = response.data;
-            setUser(response?.data?.user);
-        }).catch(async (error) => {
-            console.log(error);
-            if (String(error?.response?.data).startsWith('Proxy error')) {
-                setLoading({ status: 'The backend is not running.', linkText: 'Retry' });
-            } else {
-                // retrys to access the user data again, sometimes it doesn't recognize auth immediately
-                const status = error.response?.status;
-                const { data } = error?.response ?? {};
-                let message = 'Error';
-                if (data?.title) {
-                    message = data?.title;
-                }
-
-                setLoading({ 
-                    status: error?.response ? `${message} | ${status}` : 'There has been an error.', 
-                    linkText: 'Retry'
-                });
-            }
-        });
-    }
-
-    const onOAuth2Login = useCallback(async () => {
-        const userResponse = await getCurrentUserFromBackend();
-        if (userResponse?.data?.user?.id) {
-            setLoading({ status: 'Loading...', icon: 0 });
-            setUser(userResponse?.data?.user);
-        }
-    }, []);
-
-    const onLogout = async () => {
-        await logoutOnBackend();
-
-        setGraph(null);
-        setUser(null);
-        setUsername('');
-        setPassword('');
-    }
-    
-    const onHeaderMount = (navigate) => {
-        if (graph.size() === 0) navigate('/editor');
-    }
-
-    const onEditorMount = (e) => {
-        if (graph.size() === 0) createNoteClick();
-    }
-
-    const handlePreloadingAnimationFinished = () => {
-        setLoading(false);
-        setLoadingScreenFading(false);
-    }
+    }, [graph, newNoteId, setGraph, setNewNoteId, setSelected, setUserOrder, userOrder]);
 
     return (
+        <NoteboxProvider>
+            <BrowserRouter>
+                <Header />
+                <Routes>
+                    <Route path="/" element={<Navigate to={graph?.size() !== 0 ? "/thoughtwall" : '/editor'} replace />} />
+                    <Route path="/thoughtwall" element={
+                        <NoteBoxLayout>
+                            <ThoughtWall/>
+                        </NoteBoxLayout>
+                    } />
+                    <Route path="/editor" element={
+                        <NoteBoxLayout>
+                            <Editor />
+                        </NoteBoxLayout>
+                    } />
+                    <Route path="/account" element={<Account />} />
+                    <Route path="*" element={<Navigate to="/thoughtwall" replace />} />
+                </Routes>
+                <CreateNoteButton onClick={handleCreateNoteClick} />
+            </BrowserRouter>
+        </NoteboxProvider>
+    );
+}
+
+const App = () => {
+    const { graph } = useAppContent();
+    const { user } = useUser();
+    return (
         <main className={styles.fullSize}>
-            {loading && (
-                <Fader 
-                    className={styles.fullSize} 
-                    fadeOut={isLoadingScreenFading} 
-                    style={isLoadingScreenFading ? { position: 'absolute', zIndex: 20 } : null}
-                    onFadeOutFinish={handlePreloadingAnimationFinished}
-                >
-                    <Loading 
-                        icon={loading.icon ?? 1}
-                        status={loading.status ?? ' '}
-                        linkText={loading.linkText}
-                        linkOnClick={() => setLoading(false)}
-                        startExitAnimation={isPreloaded}
-                        onFinishExitAnimation={() => setLoadingScreenFading(true)}
-                    >
-                        {!isPreloaded && preloadComponents}
-                    </Loading>
-                </Fader>
-            )}
-            {(!loading || isLoadingScreenFading) && (
-                (!graph || !user?.id) ? (
-                    <BrowserRouter>
-                        <Routes>
-                            <Route path="*" element={
-                                <Login 
-                                    usernameValue={username}
-                                    passwordValue={password}
-                                    onUsernameChange={(e) => setUsername(e.target.value)}
-                                    onPasswordChange={(e) => setPassword(e.target.value)}
-                                    onSubmit={onLoginSubmit}
-                                    onOAuth2Login={onOAuth2Login}
-                                />
-                            } />
-                            <Route path="createAccount/*" element={<CreateAccount />} />
-                            <Route path="forgotPassword/*" element={<ForgotPassword />} />
-                            <Route path="changePassword/*" element={<UpdatePassword />} />
-                        </Routes>
-                    </BrowserRouter> 
-                ) : (
-                    <BrowserRouter >
-                        <Header 
-                            ref={headerRef} 
-                            username={user.username} 
-                            onMount={onHeaderMount}
-                            onLogoClick={onLogout} 
-                        />
-                        <LoginProvider
-                            graph={graph}
-                            setGraph={setGraph}
-                            userOrder={userOrder} 
-                            setUserOrder={setUserOrder}
-                            selected={selected}
-                            setSelected={setSelected}
-                            notebooks={notebooks}
-                            setNotebooks={setNotebooks}
-                            userId={user.id}
-                        >
-                            <Routes>
-                                <Route path="/" element={
-                                    <NoteBoxLayout>
-                                        <ThoughtWall/>
-                                    </NoteBoxLayout>
-                                } />
-                                <Route path="/editor" element={
-                                    <NoteBoxLayout>
-                                        <Editor
-                                            onMount={onEditorMount}
-                                            newNoteId={newNoteId}
-                                        />
-                                    </NoteBoxLayout>
-                                } />
-                                <Route path="/account" element={
-                                    <Account 
-                                        name={user.name}
-                                        username={user.username}
-                                        email={user.email}
-                                        dateCreated={user.dateCreated}
-                                        noteCount={graph?.size() ?? 0}
-                                        notebookCount={notebooks.length - 1}
-                                    />
-                                } />
-                            </Routes>
-                            <CreateNoteButton onClick={createNoteClick}/>
-                        </LoginProvider>
-                    </BrowserRouter>
-                )
+            {(!graph || !user?.id) ? (
+                <LoggedOutStack />
+            ) : (
+                <LoggedInStack/>
             )}
         </main>
     );

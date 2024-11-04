@@ -9,7 +9,7 @@ import useForm from '../../hooks/useForm';
 import { useMemo, useState } from 'react';
 
 const LINK_ROUTES = [
-    { text: 'Login', route: '/' }, 
+    { text: 'Login', route: '/login' }, 
     { text: 'Forgot Password?', route: '/forgotPassword' }, 
     { text: 'Create Account', route: '/createAccount' }
 ];

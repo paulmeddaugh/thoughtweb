@@ -5,36 +5,32 @@
 }
 
 #searchBar { /* Container for searchingFor */
-    border-bottom: 1px solid grey;
-    padding: 8px;
-    background: lightgrey;
+    border-bottom: 1px solid lightgrey;
+    /* padding: 8px; */
+    background: whitesmoke;
 }
 
 #searchInputContainer {
     position: relative;
     width: 100%;
-}
-
-#searchInputContainer:after {
-    content: "";
-    position: absolute;
-    right: 6px;
-    top: 9px;
-    background-image: url(../../resources/dropdownArrow.png);
-    background-size: contain;
-    width: 14px;
-    height: 14px;
-    margin-left: -30px;
-    padding: .1em;
-    pointer-events: none;
-    cursor: pointer;
+    background-color: transparent;
 }
 
 #searchInput {
-    margin: 1px 0 0 1px;
-    padding: 1px 4px;
-    font-size: 16px;
+    padding: 10px 38px 8px 11px;
+    font: 700 1rem Corbel Light;
+    letter-spacing: -0.005rem;
     width: 100%;
+    background-color: transparent;
+    border: none;
+    background-color: whitesmoke;
+    box-shadow: inset 0 0 20px whitesmoke;
+    color: dimgrey;
+}
+
+#searchInput:hover {
+    background-color: var(--notebox-input-hover-background-color);
+    box-shadow: none;
 }
 
 #searchInput::-webkit-calender-picker-indicator {
@@ -43,26 +39,31 @@
 
 #searchInputClear {
     position: absolute;
-    top: 10px;
-    right: 24px;
-    width: 12px;
-    height: 12px;
+    top: 50%;
+    translate: 0 -50%;
+    right: 0;
+    width: 38px;
+    height: 38px;
     cursor: pointer;
+}
+
+#searchInputClear:hover {
+    background-color: var(--notebox-input-hover-background-color);
 }
 
 #searchInputClear::after, #searchInputClear::before {
     content: '';
     position: absolute;
-    top: 0;
+    top: 50%;
     left: 50%;
+    translate: 0 -50%;
     width: 1px;
-    height: 100%;
-    transform: rotate(45deg);
+    height: 12px;
     background-color: grey;
     border-radius: 2px;
 }
 
-#searchInputClear::after {
+#searchInputClear::before {
     transform: rotate(45deg);
 }
 

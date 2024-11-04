@@ -1,6 +1,6 @@
 using AspNetCore.Identity.Database;
 using Microsoft.EntityFrameworkCore;
-using backend.Models;
+using backend.Contexts;
 
 namespace AspNetCore.Identity.Extensions;
 

@@ -16,6 +16,7 @@ export const usePreload = (urls) => { // urls: { images: [], fonts: [] }
         <img
           src={src}
           className="d-none"
+          alt={i}
           ref={(ref) => imageRefs.push(ref)}
           onLoad={updateImageStatus(imageRefs)}
           onError={updateImageStatus(imageRefs)}

@@ -1,9 +1,17 @@
+import { useAppContent } from '../context/appContent';
+import { useUser } from '../context/user';
 import styles from '../styles/Account.module.css';
 
-const Account = ({ name, username, email, dateCreated, noteCount, notebookCount }) => {
+const formatDate = (date) => {
+    return new Date(date)?.toLocaleDateString('en-us', { month:"short", day:"numeric", year: "numeric"});
+}
 
-    dateCreated = new Date(dateCreated)?.toLocaleDateString('en-us', { month:"short", day:"numeric", year: "numeric"});
-
+const Account = () => {
+    const { user } = useUser();
+    const { name, username, email, dateCreated } = user ?? {};
+    const { graph, notebooks } = useAppContent();
+    const noteCount = graph.size() ?? 0;
+    const notebookCount = notebooks.length - 1;
     return (
         <div className={styles.main}>
             <form className={styles.info}>
@@ -21,7 +29,7 @@ const Account = ({ name, username, email, dateCreated, noteCount, notebookCount 
                 </div>
                 <div className={styles['read-only-row']}>
                     <b>Date Created:&nbsp;</b>
-                    <label>{dateCreated}</label>
+                    <label>{formatDate(dateCreated)}</label>
                 </div>
                 <div className={styles['read-only-row']}>
                     <b>Notebook Count:&nbsp;</b>

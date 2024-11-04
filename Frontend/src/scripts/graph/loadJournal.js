@@ -3,7 +3,7 @@ import Notebook from '../notes/notebook.js';
 import Graph from './graph.js';
 import { stringFromSQL } from '../utility/utility.js';
 import { comparePositions, positionBefore } from '../utility/customOrderingAsStrings.js';
-import { getJournalDataFromBack, updateOrderOnBack } from '../../axios/axios.js';
+import { getJournalDataFromBack, updateOrderOnBack } from '../../services/axios.js';
 
 let NO_NOTES_ORDER_BEGIN = 'O';
 
@@ -21,17 +21,13 @@ export default function loadJournal (idUser, callback, idNotebook, asDisplayable
     getJournalDataFromBack(idUser).then((response) => {
         let graph = new Graph(), notebooks = [], userOrder = [];
 
-        const nbs = response.data._embedded.collectionModelList[0]._embedded?.notebookList;
-        const notes = response.data._embedded.collectionModelList[1]._embedded?.noteList;
-        const connections = response.data._embedded.collectionModelList[2]._embedded?.connectionList;
+        console.log('response', response);
+        const { notebooks: nbs, notes, connections } = response.data;
 
         // Loads user note data into the graph and order array
         if (notes) {
             for (let noteData of notes) {
-                let note = new Note(noteData.id, stringFromSQL(noteData.title), 
-                    stringFromSQL(noteData.text), stringFromSQL(noteData.quotes), noteData.idNotebook, 
-                    !!Number(noteData.main), noteData.dateCreated, noteData?.allNotesPosition);
-
+                let note = Note.fromJournalEndpoint(noteData);
                 graph.addVertex(note);
                 userOrder.push({ id: note.id, graphIndex: graph.size() - 1, order: note?.allNotesPosition });
             }

@@ -1,23 +1,30 @@
 import { forwardRef, useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styles from '../styles/Header.module.css';
 import AboutModal from './AboutModal';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
-import { BOOTSTRAP_SM_BREAKPOINT } from '../constants/constants';
+import { BASE_URL, BOOTSTRAP_SM_BREAKPOINT } from '../constants/constants';
+import { useAppContent } from '../context/appContent';
+import { logoutOnBackend } from '../services/axios';
+import { useUser } from '../context/user';
 
-const Header = ({ username, onLogoClick, onMount }, ref) => {
+const Header = ({ children }, ref) => {
 
-    const navigate = useNavigate();
+    const { setGraph } = useAppContent();
+    const { user, setUser } = useUser();
+    const username = user?.username;
     const [showAboutModel, setShowAboutModel] = useState(false);
     const hamburgerTogglerRef = useRef(null);
 
     // for hamburger styling purposes, this state adds a css module class also when collapsed
     const [isCollapsed, setCollapsed] = useState(parseInt(window.innerWidth) < BOOTSTRAP_SM_BREAKPOINT ? false : true);
 
-    useEffect(() => {
-        onMount?.(navigate);
-    }, []);
-    
+    const handleLogoClick = async () => {
+        await logoutOnBackend();
+        setGraph(null);
+        setUser(null);
+    }
+
     useEffect(() => {
 
         function handleWindowResize (e) {
@@ -47,7 +54,13 @@ const Header = ({ username, onLogoClick, onMount }, ref) => {
             <Navbar expand="sm" className={styles.headerColor}>
                 <Container fluid={true} className='bd-navbar'>
                     <div className={'flex1'}>
-                        <Navbar.Brand href="#" className={styles.brandLink} onClick={onLogoClick}>thoughtweb</Navbar.Brand>
+                        <Navbar.Brand 
+                            href={`${BASE_URL}/login?animation=false`} 
+                            className={styles.brandLink} 
+                            onClick={handleLogoClick}
+                        >
+                            thoughtweb
+                        </Navbar.Brand>
                     </div>
                     <Navbar.Toggle 
                         ref={hamburgerTogglerRef}

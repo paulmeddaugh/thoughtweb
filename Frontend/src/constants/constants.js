@@ -1,3 +1,8 @@
+export const BASE_URL = `${window.location.protocol}//${window.location.host}`;
+
+// Breakpoints
+export const BOOTSTRAP_SM_BREAKPOINT = 576;
+
 // App.js
 export const NO_NOTES_POSITION_BEGIN = 'O';
 
@@ -21,8 +26,6 @@ export const BIG_NOTE_STICKY_HOVER_HEIGHT = 175;
 export const WITH_ANIMATION = false;
 export const MULTI_CONN_BEGIN_ANIM = (WITH_ANIMATION) ? 0 : 2;
 export const NO_CONN_BEGIN_ANIM = 0;
-
-export const BOOTSTRAP_SM_BREAKPOINT = 576;
 
 // JournalWall.js
 export const MAIN_NOTE_SIZE = { width: 100, height: 100 };

@@ -1,7 +1,7 @@
 import styles from '../../styles/LoginComponentStyles/ForgotPassword.module.css';
 import TWForm from './TWForm';
 import { useState } from 'react';
-import { sendResetPasswordEmailRequest } from '../../axios/axios';
+import { sendResetPasswordEmailRequest } from '../../services/axios';
 import { invalidInputMessage } from '../../scripts/forms/validate';
 
 const inputPropertiesArray = [

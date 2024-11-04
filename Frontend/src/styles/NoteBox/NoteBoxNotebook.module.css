@@ -1,10 +1,13 @@
 .nbOption {
-    padding: 3px 5px;
+    padding: 12px;
     font-size: 16pt;
     display: flex;
     justify-content: space-between;
     white-space: nowrap;
     background-color: lightgrey;
+    font: 400 1.5rem Corbel;
+    letter-spacing: -0.005;
+    color: dimgray;
 }
 
 .nbOption:hover {
