@@ -1,5 +1,5 @@
 import styles from '../../styles/LoginComponentStyles/Login.module.css';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import Notification from '../global/Notification';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLoading } from '../../context/loading';
@@ -11,16 +11,12 @@ import { useAuthTokens } from '../../context/authTokens';
 const BASE_URL = `${window.location.protocol}//${window.location.host}`;
 const GOOGLE_LOGIN_URL = `${BASE_URL}/api/login/google?returnUrl=/login`;
 
-const queryParameters = new URLSearchParams(window.location.search)
-const jwt = queryParameters.get("jwt");
-
 const Login = ({ formState, formErrors, onFormStateChange }) => {
-    const usernameRef = useRef(null);
-    const passwordRef = useRef(null);
     const { setUser } = useUser();
     const { setAuthTokens } = useAuthTokens();
     const [notificationProps, setNotificationProps] = useState(null);
     const { setLoading } = useLoading();
+    const [searchParams] = useSearchParams();
 
     const loadUserData = useCallback(async () => {
         try {
@@ -71,12 +67,13 @@ const Login = ({ formState, formErrors, onFormStateChange }) => {
 
     useEffect(() => {
         // FIRES TWICE
-        if (jwt) {
+        const token = searchParams.get("token")
+        if (token) {
             (async function () {
                 setLoading({ status: 'Loading...', icon: 0 });
 
                 // Get Google access tokens
-                const authTokens = (await getGoogleAccessTokens(jwt)
+                const authTokens = (await getGoogleAccessTokens(token)
                     .catch(e => {
                         setLoading({
                             status: `Could not verify Google log in: ${e}`,
@@ -126,7 +123,6 @@ const Login = ({ formState, formErrors, onFormStateChange }) => {
                             name='usn'
                             className={styles.inputs}
                             placeholder="Email or Username"
-                            ref={usernameRef}
                             value={formState?.usn}
                             onChange={onFormStateChange}
                             autoFocus={true}
@@ -139,7 +135,6 @@ const Login = ({ formState, formErrors, onFormStateChange }) => {
                             name='pwd'
                             className={styles.inputs}
                             placeholder="Password"
-                            ref={passwordRef} 
                             value={formState?.pwd}
                             onChange={onFormStateChange}
                             onKeyDown={(e) => {if (e.key === 'Enter') handleSubmit(e)}}

@@ -1,20 +1,25 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.Contexts;
-using backend.Models.Note;
+using backend.Models.Note.Connection;
 using System.Security.Claims;
+using backend.Models.ExceptionDTO;
+using Microsoft.AspNetCore.Identity;
+using AspNetCore.Identity.Database;
 
 namespace backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ConnectionsController : ControllerBase
+    public class ConnectionsController : BaseController
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<CustomUser> _userManager;
 
-        public ConnectionsController(ApplicationDbContext context)
+        public ConnectionsController(ApplicationDbContext context, UserManager<CustomUser> userManager)
         {
             _dbContext = context;
+            _userManager = userManager;
         }
 
         // GET: api/Connections
@@ -89,48 +94,63 @@ namespace backend.Controllers
         // POST: api/Connections
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Connection>> CreateConnection(Connection connection)
+        public async Task<ActionResult<Connection>> CreateConnections(List<ConnectionRequest> connections)
         {
-            if (!ConnectionBelongsToUser(connection))
+            List<object> createdConnections = [];
+            for (int i = 0; i < connections.Count; i++)
             {
-                return Unauthorized();
+                Connection connection = connections[i].ToConnection();
+                if (!ConnectionBelongsToUser(connection))
+                {
+                    return Unauthorized(new ExceptionDTO($"Index {i} of connections to create is unauthorized. "
+                        + "All previous indices has been created."));
+                }
+
+                _dbContext.Connections.Add(connection);
+                await _dbContext.SaveChangesAsync();
+
+                createdConnections.Add(new {
+                    connection,
+                    Uri = Url.Action(nameof(GetConnection), new { id = connection.Id })
+                });
             }
 
-            _dbContext.Connections.Add(connection);
-            await _dbContext.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetConnection), new { id = connection.Id }, connection);
+            return Ok(createdConnections);
         }
 
-        // DELETE: api/Connections/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteConnection(long id)
+        // PATCH: api/Connections/delete-requests
+        [HttpPatch("delete-requests")]
+        public async Task<IActionResult> DeleteConnection(List<ConnectionRequest> connections)
         {
-            var connection = await _dbContext.Connections.FindAsync(id);
-            if (connection == null)
+            // Loads user connections
+            var user = await _userManager.FindByIdAsync(GetLoggedInUserId());
+            await _dbContext.Entry(user).Collection(u => u.Connections).LoadAsync();
+
+            for (int i = 0; i < connections.Count; i++)
             {
-                return NotFound();
+                var connection = connections[i];
+                var actualConnection = connection.Id != null
+                    ? await _dbContext.Connections.FindAsync(connection.Id)
+                    : user.Connections.FirstOrDefault(c => 
+                        c.IdNote1 == connection.IdNote1 && c.IdNote2 == connection.IdNote2
+                    );
+
+                if (actualConnection == null)
+                {
+                    return NotFound(new ExceptionDTO($"Index {i} of connections to delete was not found. "
+                        + "All previous indices has been deleted."));
+                }
+
+                _dbContext.Connections.Remove(actualConnection);
+                await _dbContext.SaveChangesAsync();
             }
 
-            if (!ConnectionBelongsToUser(connection))
-            {
-                return Unauthorized();
-            }
-
-            _dbContext.Connections.Remove(connection);
-            await _dbContext.SaveChangesAsync();
-
-            return NoContent();
+            return Ok($"{connections.Count} connection(s) successfully deleted.");
         }
 
         private bool ConnectionExists(long id)
         {
             return _dbContext.Connections.Any(e => e.Id == id);
-        }
-
-        private string GetLoggedInUserId()
-        {
-            return User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
         private bool ConnectionBelongsToUser(Connection connection)

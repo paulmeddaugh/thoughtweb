@@ -20,9 +20,9 @@ const TWForm = ({
     inputPropertiesArray,
     onSubmit,
     submitText,
-    showNavLinks = true,
     notificationProps,
     onNotificationClose,
+    linkRoutes = null, // excludes current path
     children
 }) => {
     const [internalNotificationProps, setInternalNotificationProps] = useState(null);
@@ -101,8 +101,10 @@ const TWForm = ({
                         onClick={onFormSubmit}
                     />
                 </form>
-                {!!showNavLinks && LINK_ROUTES
-                    .filter((routeProps => window.location.pathname !== routeProps.route))
+                {LINK_ROUTES
+                    .filter((routeProps => !linkRoutes
+                        ? window.location.pathname !== routeProps.route
+                        : linkRoutes.includes(routeProps.route)))
                     .map(routeProps => (
                         <Link className={styles.link} to={routeProps.route} key={routeProps.route}>
                             {routeProps.text}

@@ -1,8 +1,9 @@
 import axios from "axios";
 import { checkIfArrays, checkIfNoteProps, checkIfNumbers, checkIfString } from "../scripts/utility/errorHandling";
 import { isValidEmail } from "../scripts/utility/utility";
+import { Connection } from "../scripts/notes/connection";
 
-const defaultConfig = { withCredentials: true };
+const defaultConfig = {};
 
 export const setAxiosBearerToken = (bearerToken) => {
     axios.defaults.headers.common = { 'Authorization': `Bearer ${bearerToken}` };
@@ -25,8 +26,8 @@ export const loginWithCredentials = async (emailOrUsername, password) => {
     return axios.post(`/api/login`, body);
 }
 
-export const getGoogleAccessTokens = (jwt) => {
-    return axios.get(`/api/login/google-tokens?jwt=${jwt}`);
+export const getGoogleAccessTokens = (token) => {
+    return axios.get(`/api/login/google-tokens?token=${token}`);
 };
 
 export const createNewUserOnBack = (user) => {
@@ -37,12 +38,12 @@ export const getCurrentUserFromBackend = () => {
     return axios.get('/api/user');
 };
 
-export const sendResetPasswordEmailRequest = (email) => {
-    return axios.post(`/api/user/resetPassword?email=${email}`);
+export const sendResetPasswordEmailRequest = (email, redirectUrl) => {
+    return axios.post(`/api/user/reset-password?email=${email}&redirectUrl=${redirectUrl}`);
 }
 
 export const updatePassword = (token, newPassword) => {
-    return axios.post(`/api/user/savePassword`, { token, newPassword })
+    return axios.post(`/api/user/save-password`, { token, newPassword })
 }
 
 export const getJournalDataFromBack = async (userId) => {
@@ -52,49 +53,54 @@ export const getJournalDataFromBack = async (userId) => {
 
 export const createNoteOnBack = async (note) => {
     checkIfNoteProps({ note });
-    return axios.post('/api/notes/new', note, defaultConfig);
+    return axios.post('/api/notes', note, defaultConfig);
 }
 
 export const updateNoteOnBack = async (note) => {
     checkIfNoteProps({ note });
-    return axios.put(`/api/notes/${note.id}/update`, note, defaultConfig);
+    return axios.put(`/api/notes/${note.id}`, note, defaultConfig);
 }
 
 export const deleteNoteOnBack = async (id) => {
     checkIfNumbers({ id });
-    return axios.delete(`/api/notes/${id}/delete`, defaultConfig);
+    return axios.delete(`/api/notes/${id}`, defaultConfig);
 }
 
 export const createNotebookOnBack = async (notebook) => {
-    checkIfNumbers({ 'notebook.idUser': notebook.idUser });
+    checkIfNumbers({ 'notebook.idUser': notebook.idUser, 'notebook.id': notebook.id });
     checkIfString({ 'notebook.name': notebook.name }); 
-    return axios.post('/api/notebooks/new', notebook, defaultConfig);
+    return axios.post('/api/notebooks', notebook, defaultConfig);
+}
+
+export const updateNotebookOnBack = async (notebook) => {
+    checkIfNumbers({ 'notebook.idUser': notebook.idUser, 'notebook.id': notebook.id });
+    checkIfString({ 'notebook.name': notebook.name }); 
+    return axios.put(`/api/notebooks/${notebook.id}`, notebook, defaultConfig);
 }
 
 export const deleteNotebookOnBack = async (idNotebook) => {
     checkIfNumbers({ idNotebook });
-    return axios.delete(`/api/notebooks/${idNotebook}/delete`, defaultConfig);
+    return axios.delete(`/api/notebooks/${idNotebook}`, defaultConfig);
 }
 
-export const addMultipleConnsOnBack = (userId, id1, id2Arr) => {
-    checkIfNumbers({ userId, id1 });
-    checkIfArrays({ id2Arr });
-    const id2sStr = String(id2Arr).split(',');
-	return axios.post(`/api/connections/new?idUser=${userId}&idNote1=${id1}&idNote2=${id2sStr}`, {}, defaultConfig);
+export const addMultipleConnsOnBack = (userId, idNote1, idNote2Array) => {
+    checkIfArrays({ id2Arr: idNote2Array });
+    const connections = Connection.fromIdNote2Array(null, idNote1, idNote2Array, userId);
+	return axios.post(`/api/connections`, connections, defaultConfig);
 }
 
-export const deleteMultipleConnsOnBack = (userId, id1, id2Arr) => {
-    checkIfNumbers({ userId, id1 });
-    checkIfArrays({ id2Arr });
-    const id2sStr = String(id2Arr).split(',');
-    return axios.delete(`/api/connections/delete?idUser=${userId}&idNote1=${id1}&idNote2=${id2sStr}`, defaultConfig);
+export const deleteMultipleConnsOnBack = (userId, idNote1, idNote2Array) => {
+    checkIfArrays({ id2Arr: idNote2Array });
+    const connections = Connection.fromIdNote2Array(null, idNote1, idNote2Array, userId);
+    return axios.patch(`/api/connections/delete-requests`, connections, defaultConfig);
 }
 
 export const updateOrderOnBack = async (noteId, position) => {
     checkIfNumbers({ noteId });
     checkIfString({ position });
-    const headers = { headers: {'Content-Type': 'text/plain'} };
-    return axios.put(`/api/notes/${noteId}/updateOrder`, position, headers, defaultConfig);
+    // const headers = { headers: {'Content-Type': 'text/plain'} };
+    return new Promise(resolve => resolve());
+    // return axios.put(`/api/notes/${noteId}/updateOrder`, position, headers, defaultConfig);
 }
 
 export const logoutOnBackend = () => {

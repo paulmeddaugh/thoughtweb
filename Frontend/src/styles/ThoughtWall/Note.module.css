@@ -1,3 +1,8 @@
+.mainNote {
+    --card-width: 100px;
+    --card-height: 125px;
+}
+
 .mainNote, .stickyNote {
     border: 1px solid black;
     translate: -50% -50%;
@@ -11,14 +16,14 @@
 }
 
 .mainNote {
-    width: 100px;
-    height: 125px;
+    width: var(--card-width);
+    height: var(--card-height);
     background-color: rgb(240, 238, 239); /* rgb(255, 242, 171), #f5dec3 */
 }
 
 .mainNote:hover {
-    width: 150px;
-    height: 187px;
+    width: calc(var(--card-width) * 1.5);
+    height: calc(var(--card-height) * 1.5);
     background-color: rgb(240, 238, 239);
     z-index: 4;
 }
@@ -47,7 +52,6 @@
     min-height: 1.4em;
     max-height: 3rem;
     overflow: hidden;
-    white-space: nowrap;
     text-overflow: ellipsis;
 }
 

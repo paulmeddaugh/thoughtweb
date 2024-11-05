@@ -14,11 +14,12 @@ To change to either "Development" or "Production", run:
 export ASPNETCORE_ENVIRONMENT="Development"|"Production"
 ```
 
-### Testing Google SSO
-To test Google SSO in development, run the following commands:
+### Testing Google SSO and Sending Email Gmail
+To test Google SSO and Gmail in development, run the following commands:
 ```
 dotnet user-secrets set "Authentication:Google:ClientId" "<client_id>"
 dotnet user-secrets set "Authentication:Google:ClientSecret" "<client_secret>"
+dotnet user-secrets set "EmailSender:Gmail:Password" "<gmail_password>"
 ```
 
 ### Generating Controllers
@@ -36,3 +37,5 @@ Google SSO Bearer Issue: https://stackoverflow.com/questions/78083217/asp-net-co
 SQL Server Connection Tutorial: https://learn.microsoft.com/en-us/dotnet/aspire/database/sql-server-integrations
 EF Core Database Migration Reverting: https://code-maze.com/efcore-how-to-revert-a-migration/
 JWT Access and Refresh Tokens: https://medium.com/@KumarHalder/token-based-authentication-in-asp-net-core-43e99aee0593
+Deleting multiple records RESTfully: https://stackoverflow.com/questions/21863326/delete-multiple-records-using-rest
+Email Sender: https://tutorials.eu/how-to-send-emails-in-asp-net-web-applications/

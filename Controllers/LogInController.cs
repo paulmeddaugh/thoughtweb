@@ -17,7 +17,7 @@ using System.Net;
 namespace backend.Controllers
 {
     [Route("api/login")]
-    public class LogInController : Controller
+    public class LogInController : BaseController
     {
 
         private readonly UserManager<CustomUser> _userManager;
@@ -47,16 +47,16 @@ namespace backend.Controllers
 
             _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
-            var emailResult = usingEmail
+            var emailUser = usingEmail
                 ? await _userManager.FindByEmailAsync(login.Email)
                 : null;
 
-            if (usingEmail && emailResult == null) {
+            if (usingEmail && emailUser == null) {
                 throw new CustomUserException("The email provided does not belong to any account.");
             }
 
             var username = usingEmail
-                ? emailResult.UserName
+                ? emailUser.UserName
                 : login.UserName;
 
             var result = await _signInManager.PasswordSignInAsync(username, login.Password, isPersistent: false, lockoutOnFailure: true);
@@ -69,19 +69,19 @@ namespace backend.Controllers
         [HttpGet("google")]
         public IActionResult GoogleLogin(string returnUrl = "/")
         {
-            var jwtParam = (returnUrl.Contains('?') ? "&" : "?")
-                + $"jwt={_jwtTokens.GenerateEncodedToken(DateTime.Now.AddMinutes(1))}";
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(GoogleDefaults.AuthenticationScheme, returnUrl + jwtParam);
+            var token = (returnUrl.Contains('?') ? "&" : "?")
+                + $"token={_jwtTokens.GenerateEncodedToken(DateTime.Now.AddMinutes(5))}";
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(GoogleDefaults.AuthenticationScheme, returnUrl + token);
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
         [AllowAnonymous]
         [HttpGet("google-tokens")]
-        async public Task GoogleLoginTokens(string jwt)
+        async public Task GoogleLoginTokens(string token)
         {
             _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
-            if (!_jwtTokens.ValidateToken(jwt)) {
+            if (!_jwtTokens.ValidateToken(token)) {
                 throw new CustomUserException("Token is invalid.", HttpStatusCode.Unauthorized);
             }
 

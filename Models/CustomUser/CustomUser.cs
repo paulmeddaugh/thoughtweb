@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using backend.Models.Note;
+using backend.Models.Note.Connection;
 using backend.Models.Notebook;
 using Microsoft.AspNetCore.Identity;
 namespace AspNetCore.Identity.Database;
@@ -25,6 +26,10 @@ public class CustomUser : IdentityUser
     [InverseProperty(nameof(Connection.User))]
     public virtual ICollection<Connection> Connections { get; set; }
 
+    public CustomUser () : base() {
+        DateCreated = DateTime.Now;
+    }
+
     public static CustomUser FromCustomUserRequest (CustomUserRequest userRequest) {
         return new CustomUser {
             Name = userRequest.Name,
@@ -41,6 +46,7 @@ public class CustomUser : IdentityUser
             Username = this.UserName,
             Email = this.Email,
             Reminder = this.Reminder,
+            DateCreated = this.DateCreated,
         };
     }
 }

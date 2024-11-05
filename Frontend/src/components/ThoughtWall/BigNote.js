@@ -1,62 +1,90 @@
-import { useEffect, forwardRef } from 'react';
 import styles from '../../styles/ThoughtWall/Note.module.css';
 import bigStyles from '../../styles/ThoughtWall/BigNote.module.css';
+import { useEffect, forwardRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Point from '../../scripts/notes/point';
+
+const dateFormatted = (date) => new Date(date).toLocaleDateString('en-us', { month:"short", day:"numeric" });
 
 const BigNote = ({ noteAndIndex, inlineStyle, onClick, onDoubleClick, onMount, isSelected, onMouseEnter, 
     onMouseLeave, isConnectedNote, noConnections, children }, ref) => {
 
+    const navigate = useNavigate();
+
+    const { note, index, main, title, text, quotes, dateCreated } = useMemo(() => {
+        return { 
+            note: noteAndIndex?.note ?? {}, 
+            index: noteAndIndex?.index ?? null,
+            ...(noteAndIndex?.note ?? {}),
+        };
+    }, [noteAndIndex]);
+
     useEffect(() => {
         const point = (inlineStyle.left && inlineStyle.top) ? new Point(inlineStyle.left, inlineStyle.top) : null;
-        onMount?.(noteAndIndex.note, noteAndIndex.index, point);
-    }, []);
+        onMount?.(note, index, point);
+    }, [index, inlineStyle.left, inlineStyle.top, note, onMount]);
 
     const clicked = () => {
         const point = (inlineStyle.left && inlineStyle.top) ? new Point(inlineStyle.left, inlineStyle.top) : null;
-        onClick?.(noteAndIndex.note, noteAndIndex.index, point);
+        onClick?.(note, index, point);
     }
 
-    const doubleClicked = () => {
-        const point = (inlineStyle.left && inlineStyle.top) ? new Point(inlineStyle.left, inlineStyle.top) : null;
-        onDoubleClick?.(noteAndIndex.note, noteAndIndex.index, point);
+    // const handleDoubleClick = () => {
+    //     const point = (inlineStyle.left && inlineStyle.top) ? new Point(inlineStyle.left, inlineStyle.top) : null;
+    //     onDoubleClick?.(note, index, point);
+    // }
+
+    const handleFullscreenIconClick = e => {
+        navigate("/editor");
     }
 
     return (
         <>
             <div 
-                className={(noteAndIndex?.note.main ? bigStyles.mainNote : bigStyles.stickyNote)
-                    + ' ' + (noConnections ? bigStyles.noConnections : '')}
+                className={`${bigStyles[main ? 'mainNote' : 'stickyNote']} ${noConnections && bigStyles.noConnections}`}
                 style={inlineStyle}
                 onClick={clicked}
-                onDoubleClick={doubleClicked}
+                // onDoubleClick={handleDoubleClick}
                 onMouseEnter={onMouseEnter}
                 onMouseLeave={onMouseLeave}
                 ref={ref}
             >
-                <div className={`${bigStyles.content} ${noteAndIndex?.note.main ? bigStyles.contentMain : bigStyles.contentSticky}`}>
-                    {!!noteAndIndex?.note.title && 
-                        <div className={`${styles.noteTitle} ${bigStyles.noteTitle} ${(isSelected ? styles.selected : '')} ${isConnectedNote ? bigStyles.connectedNote : ''}`}>
-                            {noteAndIndex?.note.title}
+                <div className={`${bigStyles.content} ${bigStyles[main ? 'contentMain' : 'contentSticky']}`}>
+                    {title && (
+                        <div className={bigStyles.titleContainer}>
+                            <div 
+                                className={[
+                                    styles.noteTitle, 
+                                    bigStyles.noteTitle, 
+                                    isSelected ? styles.selected : '', 
+                                    isConnectedNote ? bigStyles.connectedNote : ''
+                                ].join(' ')}
+                            >
+                                {title}
+                            </div>
+                            <div 
+                                className={bigStyles.fullscreenIcon}
+                                onClick={handleFullscreenIconClick}
+                            />
                         </div>
-                    }
-                    {!!noteAndIndex?.note.text && 
+                    )}
+                    {text && (
                         <div className={bigStyles.noteText}>
-                            {noteAndIndex?.note.text}
-                            {!!noteAndIndex?.note.quotes && 
-                                <div className={bigStyles.noteQuotes}>{noteAndIndex?.note.quotes}</div>
-                            }
+                            {text}
+                            {quotes && (
+                                <div className={bigStyles.noteQuotes}>{quotes}</div>
+                            )}
                         </div>
-                    }
+                    )}
                 </div>
                 {children}
             </div>
             <div className={bigStyles.noteDate}>
-                {new Date(noteAndIndex?.note.dateCreated)
-                    .toLocaleDateString('en-us', { month:"short", day:"numeric" })}
+                {dateFormatted(dateCreated)}
             </div>
-            <div className={bigStyles.doubleClickLabel}>
+            {/* <div className={bigStyles.doubleClickLabel}>
                Double click to edit
-            </div>
+            </div> */}
         </>
     )
 }

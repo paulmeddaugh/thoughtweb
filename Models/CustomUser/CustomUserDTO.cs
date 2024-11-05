@@ -7,4 +7,5 @@ public class CustomUserDTO
     public string Username { get; set; }
     public string Email { get; set; }
     public string Reminder { get; set; }
+    public DateTime DateCreated { get; set; }
 }

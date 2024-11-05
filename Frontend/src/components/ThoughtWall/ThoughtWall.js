@@ -45,16 +45,14 @@ const getNoteWallGapFromUserOrderIndex = (graph, userOrder, userOrderIndex) => {
 const ThoughtWall = () => {
 
     const { graph, selected, setSelected, filters, userOrder } = useAppContent();
+    const { isPinned: isNoteboxPinned } = useNotebox();
 
     const [independentNotes, setIndependentNotes] = useState([]);
     const scrollToMap = useRef(new Map()).current;
-    
     const [centerPoints, setCenterPoints] = useState([]);
-
+    
     const journalWallRef = useRef(null);
-
-    const { isPinned: isNoteboxPinned } = useNotebox();
-
+    
     let navigate = useNavigate();
 
     useLayoutEffect(() => { // Determines the notes to put as the center of the webs
@@ -176,7 +174,6 @@ const ThoughtWall = () => {
     }
 
     const onConnectionClick = (note, userOrderIndex, point, bigNoteIdStack, onCloseHandler) => {
-
         const graphIndex = userOrder[userOrderIndex].graphIndex;
 
         // Scrolls to note on wall rather than create new one if 'Main' type
@@ -184,7 +181,7 @@ const ThoughtWall = () => {
             setSelected({ note, index: graphIndex });
             return;
         }
-
+        
         // Smooth scrolls to the connected note
         const { width, left } = journalWallRef.current.getBoundingClientRect();
         const noteWidth = (note.main) ? MAIN_NOTE_SIZE.width : STICKY_NOTE_WALL_WIDTH;

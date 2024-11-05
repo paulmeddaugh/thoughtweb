@@ -63,6 +63,7 @@ img {
     border: 1px solid grey;
     padding: 0 6px;
     z-index: 3;
+    cursor: pointer;
 
     /* Prevents text highlighting */
     -webkit-touch-callout: none; /* iOS Safari */

@@ -53,12 +53,12 @@ public class Note
     public string GlobalOrder { get; set; } = "";
 
     [JsonIgnore]
-    [InverseProperty(nameof(Connection.Note1))]
-    public virtual ICollection<Connection> ConnectionsAsNote1 { get; set; } = [];
+    [InverseProperty(nameof(Connection.Connection.Note1))]
+    public virtual ICollection<Connection.Connection> ConnectionsAsNote1 { get; set; } = [];
 
     [JsonIgnore]
-    [InverseProperty(nameof(Connection.Note2))]
-    public virtual ICollection<Connection> ConnectionsAsNote2 { get; set; } = [];
+    [InverseProperty(nameof(Connection.Connection.Note2))]
+    public virtual ICollection<Connection.Connection> ConnectionsAsNote2 { get; set; } = [];
 
     public Note()
     {

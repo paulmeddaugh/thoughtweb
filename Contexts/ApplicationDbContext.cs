@@ -1,6 +1,7 @@
 using System.Text.Json;
 using AspNetCore.Identity.Database;
 using backend.Models.Note;
+using backend.Models.Note.Connection;
 using backend.Models.Notebook;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;

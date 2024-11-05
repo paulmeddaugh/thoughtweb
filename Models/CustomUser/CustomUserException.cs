@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using backend.Models.ExceptionDTO;
 
 namespace AspNetCore.Identity.Database;
 public class CustomUserException : Exception
@@ -23,7 +24,7 @@ public class CustomUserExceptionFilter : IExceptionFilter
     {
         if (context.Exception is CustomUserException ex)
         {
-            context.Result = new ObjectResult(new { message = ex.Message })
+            context.Result = new ObjectResult(new ExceptionDTO(ex.Message))
             {
                 StatusCode = (int) ex.HttpStatusCode
             };

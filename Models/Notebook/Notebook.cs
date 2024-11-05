@@ -17,6 +17,9 @@ public class Notebook
     [Required]
     public string Name { get; set; }
 
+    // [Column("color")]
+    // public string Color { get; set; } = null;
+
     [Column("id_user")]
     [ForeignKey("FK_Notebook_UserId")]
     [Required]

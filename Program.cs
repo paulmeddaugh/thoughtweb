@@ -60,6 +60,9 @@ services.Configure<IdentityOptions>(options =>
 
 services.AddDatabaseDeveloperPageExceptionFilter(); // Developer page exception filter (for migrations and errors during dev)
 
+// Email service
+services.AddTransient<IEmailSender, EmailSender>();
+
 // Identity services
 services.AddIdentityCore<CustomUser>()
     .AddSignInManager<SignInManager<CustomUser>>()

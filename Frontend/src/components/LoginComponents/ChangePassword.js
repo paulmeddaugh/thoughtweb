@@ -1,71 +1,51 @@
 import styles from '../../styles/LoginComponentStyles/ChangePassword.module.css';
-import { Link, useSearchParams } from 'react-router-dom';
-import { useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
 import { updatePassword } from '../../services/axios';
 import { invalidInputMessage } from '../../scripts/forms/validate';
-import Notification from '../global/Notification';
+import TWForm from './TWForm';
+
+const inputPropertiesArray = [
+    {
+        name: "pwd",
+        label: "New Password",
+        description: "Must contain an uppercase letter and be at least 8 characters long.",
+        validator: invalidInputMessage.pwd,
+        initialValue: "",
+    }
+]
 
 const UpdatePassword = () => {
-
-    const [searchParams] = useSearchParams();
-    
-    const [password, setPassword] = useState('');
     const [notification, setNotification] = useState(null);
-
-    const passwordRef = useRef(null);
-    
-    const validateForm = async (e) => {
-        
-        e.preventDefault();
-        
-        if (!invalidInputMessage['pwd'](password)) {
-            alert("Please enter a valid password.");
-            passwordRef.current.focus();
-            return;
+    const [searchParams] = useSearchParams();
+    const handleSubmit = async (values) => {
+        let res = null;
+        try {
+            const token = searchParams.get('token');
+            res = await updatePassword(token, values.pwd);
+        } catch (e) {
+            res = e;
+        } finally {
+            const type = !res.data?.message ? 'success' : 'error';
+            setNotification({ type, text: type === 'success' ? res.data : res.data?.message });
         }
-        
-        const token = searchParams.get('token');
-        const res = await updatePassword(token, password);
-        console.log(res);
-        const notifType = !res.data.error ? 'success' : 'error';
-        setNotification({ type: notifType, text: notifType === 'success' ? res.data.message : res.data.error });
     }
-
+    const handleNotificationClose = () => {
+        setNotification(null);
+    }
     return (
-        <div className={styles.body}>
-            <main>
-                <h2 className={styles.pageTitle}> Change Password </h2>
-                <form onSubmit={validateForm}>
-                    {notification && <Notification type={notification.type} className={styles.notification} onClose={() => setNotification(null)}>
-                        {notification.text}
-                    </Notification>}
-                    <div className={styles.inputRow}>
-                        <label htmlFor="usn" className={styles.label}>New Password:&nbsp;</label>
-                        <input 
-                            type="text" 
-                            id="pwd" 
-                            name="password" 
-                            value={password}
-                            ref={passwordRef}
-                            onChange={(e) => setPassword(e.target.value)}
-                            // onBlur={isInvalid['pwd']}
-                            size="30" 
-                        />
-                    </div>
-                    <input 
-                        id={styles.submit}
-                        type="submit" 
-                        className='button'
-                        name="Enter" 
-                        value="Update Password"
-                    />
-                </form>
-                <br/>
-                <Link className={styles.link} to="/">Login</Link>&nbsp;
-                <Link className={styles.link} to="/createAccount">Create Account</Link>
-            </main>
-        </div>
-    )
+        <TWForm 
+            renderTitle={() => (
+                <h1 className={styles.pageTitle}>{"Change Password"}</h1>
+            )}
+            inputPropertiesArray={inputPropertiesArray}
+            onSubmit={handleSubmit}
+            submitText={"Update Password"}
+            notificationProps={notification}
+            onNotificationClose={handleNotificationClose}
+            linkRoutes={['/login', '/createAccount']}
+        />
+    );
 }
 
 export default UpdatePassword;

@@ -5,7 +5,7 @@ using AspNetCore.Identity.Database;
 
 #nullable enable
 
-namespace backend.Models.Note;
+namespace backend.Models.Note.Connection;
 [Table("connections")]
 public class Connection
 {

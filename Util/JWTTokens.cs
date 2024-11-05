@@ -23,13 +23,13 @@ namespace backend.Util
         /// <param name="expire">The date and time when the token should expire.</param>
         /// <param name="roles">A list of the roles associated with the user, used for role-based authorization.</param>
         /// <returns>A JWT as a string, ready for use in HTTP headers for authentication.</returns>
-        public string GenerateEncodedToken(DateTime expire, IList<string> roles = null)
+        public string GenerateEncodedToken(DateTime expire, string userId = null, IList<string> roles = null)
         {
             // Initialize a list of claims for the JWT. These include the user's ID and device information,
             // a unique identifier for the JWT, and the time the token was issued.
             List<Claim> claims =
             [
-                // new Claim(JwtRegisteredClaimNames.Sub, userId),
+                userId != null ? new Claim(JwtRegisteredClaimNames.Sub, userId) : null,
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.Ticks.ToString(), ClaimValueTypes.Integer64),
                 // new Claim(ClaimTypes.System, device)
@@ -63,13 +63,13 @@ namespace backend.Util
             return encodedJwt;
         }
 
-        public bool ValidateToken(string authToken)
+        public bool ValidateToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var validationParameters = GetValidationParameters();
 
             SecurityToken validatedToken;
-            IPrincipal principal = tokenHandler.ValidateToken(authToken, validationParameters, out validatedToken);
+            IPrincipal principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
             return true;
         }
 
@@ -84,6 +84,15 @@ namespace backend.Util
                 ValidAudience = _appSettings.GetJWTAudience(),
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.GetJWTKey())) // The same key as the one that generate the token
             };
+        }
+
+        public string ExtractUserIdFromToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+
+            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+            return userId;
         }
     }
 }

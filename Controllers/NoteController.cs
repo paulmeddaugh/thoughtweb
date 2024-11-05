@@ -8,7 +8,7 @@ namespace backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class NotesController : ControllerBase
+    public class NotesController : BaseController
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -125,11 +125,6 @@ namespace backend.Controllers
             await _dbContext.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private string GetLoggedInUserId()
-        {
-            return User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
         private bool NoteExists(long id)
