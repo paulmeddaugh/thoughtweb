@@ -65,8 +65,26 @@ export default class Note {
         this.setMain(isMain);
     }
 
+    static from (noteObject) {
+        if (!noteObject) {
+            return new Note();
+        }
+        const { id, title, text, quotes, idNotebook, main, dateCreated, allNotesPosition } = noteObject;
+        return new Note(
+            id, 
+            stringFromSQL(title), 
+            stringFromSQL(text), 
+            stringFromSQL(quotes), 
+            idNotebook,
+            main, 
+            dateCreated, 
+            allNotesPosition
+        );
+    }
+
     static fromJournalEndpoint (noteData) {
-        const { id, title, text, quotes, idNotebook, isMain, dateCreated, allNotesPosition } = noteData;
+        // Revise when migrating
+        const { id, title, text, quotes, idNotebook, isMain, dateCreated, globalOrder } = noteData;
         return new Note(
             id, 
             stringFromSQL(title), 
@@ -75,7 +93,32 @@ export default class Note {
             idNotebook,
             isMain, 
             dateCreated, 
-            allNotesPosition
+            globalOrder
         );
+    }
+
+    static toUpdateDTO (note, idUser) {
+        const newNote = { 
+            ...note, 
+            idUser, 
+            globalOrder: note.allNotesPosition,
+            isMain: note.main,
+        }
+        delete newNote.allNotesPosition;
+        delete newNote.main;
+        return newNote;
+    }
+
+    equals (note) {
+        if (!note?.id) return false;
+        return this.id === note.id
+            && this.title?.replace('﻿', '') === note.title?.replace('﻿')
+            && this.idEmotion === note.idEmotion
+            && this.text === note.text
+            && this.quotes === note.quotes
+            && this.idNotebook === note.idNotebook
+            && this.main === note.main
+            && this.dateCreated.getTime() === note.dateCreated.getTime()
+            && this.allNotesPosition === note.allNotesPosition;
     }
 }

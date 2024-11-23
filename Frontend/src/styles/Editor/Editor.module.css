@@ -19,9 +19,10 @@ html, body {
     container-name: form;
 }
 
-.flexRow {
+.notebookRow {
     display: flex;
     flex-direction: row;
+    margin-bottom: 8px;
 }
 
 img { /* Notebook icon */
@@ -33,7 +34,8 @@ img { /* Notebook icon */
 #notebookIcon {
     max-width: 22px;
     max-height: 22px;
-    margin-left: 3px;
+    margin-top: 1px;
+    margin-left: 8px;
 }
 
 #notebook {
@@ -81,7 +83,7 @@ img { /* Notebook icon */
 .editorTextInputs {
     border: none;
     outline: none;
-    padding-bottom: 4px;
+    /* padding-bottom: 4px; */
     background-color: transparent;
 }
 
@@ -215,16 +217,19 @@ img { /* Notebook icon */
     transition: .5s ease;
     z-index: -1;
     pointer-events: none;
+    border-radius: 3px;
 }
 
 #mainButton .typeDescription {
     background-color: white;
-    border-top: 1px solid lightgray;
+    border: 1px solid lightgray;
+    border-bottom: none;
 }
 
 #stickyButton .typeDescription {
     background-color: rgb(255, 247, 209);
-    border-top: 1px solid rgb(241, 226, 151);
+    border: 1px solid rgb(241, 226, 151);
+    border-bottom: none;
 }
 
 #mainButton:hover .typeDescription, #stickyButton:hover .typeDescription {
@@ -235,10 +240,16 @@ img { /* Notebook icon */
 }
 
 .windowedScreenIcon {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3C!-- Generator: Adobe Illustrator 24.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0) --%3E%3Csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 512 512' style='enable-background:new 0 0 512 512;' xml:space='preserve'%3E%3Cstyle type='text/css'%3E .st0%7Bfill-rule:evenodd;clip-rule:evenodd;%7D%0A%3C/style%3E%3Cg%3E%3Cpath class='st0' d='M315.1,21.2c10.9,0,19.7,8.8,19.7,19.7v137.8h137.8c10.9,0,19.7,8.8,19.7,19.7c0,10.9-8.8,19.7-19.7,19.7 H315.1c-10.9,0-19.7-8.8-19.7-19.7V40.8C295.4,29.9,304.2,21.2,315.1,21.2z'/%3E%3Cpath class='st0' d='M506.2,5.8c7.7,7.7,7.7,20.1,0.1,27.8l-0.1,0L329,210.9c-7.7,7.7-20.2,7.7-27.9,0c-7.7-7.7-7.7-20.2,0-27.9 L478.3,5.8C486-1.9,498.5-1.9,506.2,5.8L506.2,5.8z M210.9,301.1c7.7,7.7,7.7,20.1,0.1,27.8l-0.1,0L33.6,506.2 c-7.7,7.7-20.2,7.7-27.9,0s-7.7-20.2,0-27.9L183,301.1C190.6,293.4,203.1,293.4,210.9,301.1L210.9,301.1z'/%3E%3Cpath class='st0' d='M21.1,315.1c0-10.9,8.8-19.7,19.7-19.7h157.5c10.9,0,19.7,8.8,19.7,19.7v157.5c0,10.9-8.8,19.7-19.7,19.7 c-10.9,0-19.7-8.8-19.7-19.7V334.8H40.8C29.9,334.8,21.1,325.9,21.1,315.1z'/%3E%3C/g%3E%3C/svg%3E%0A");
-    background-size: contain;
+    background-size: 18px 18px;
+    background-position: center;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: .4s ease;
 }
 
 .windowedScreenIcon:hover {

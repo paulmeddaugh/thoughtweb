@@ -4,13 +4,13 @@ import styles from '../styles/Header.module.css';
 import AboutModal from './AboutModal';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { BASE_URL, BOOTSTRAP_SM_BREAKPOINT } from '../constants/constants';
-import { useAppContent } from '../context/appContent';
 import { logoutOnBackend } from '../services/axios';
 import { useUser } from '../context/user';
+import { useNoteGraph } from '../context/noteGraph';
 
 const Header = ({ children }, ref) => {
 
-    const { setGraph } = useAppContent();
+    const { setGraph } = useNoteGraph();
     const { user, setUser } = useUser();
     const username = user?.username;
     const [showAboutModel, setShowAboutModel] = useState(false);

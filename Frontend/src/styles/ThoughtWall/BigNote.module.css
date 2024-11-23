@@ -1,11 +1,13 @@
 .mainNote {
     --card-width: 140px;
     --card-height: 175px;
+    --card-background-color: rgb(240, 238, 239);
 }
 
 .stickyNote {
     --card-width: 100px;
     --card-height: 100px;
+    --card-background-color: rgb(255, 247, 209); /* rgb(255, 242, 171) */
 }
 
 .mainNote, .stickyNote {
@@ -15,35 +17,24 @@
     transition: .5s ease;
     translate: 0 0;
     overflow: hidden;
-    z-index: 3;
+    z-index: 10;
     display: flex;
     justify-content: center;
     flex-direction: column;
     border-radius: 5px;
-}
-
-.mainNote {
     width: var(--card-width);
     height: var(--card-height);
-    background-color: rgb(240, 238, 239);
+    background-color: var(--card-background-color);
 }
 
 .mainNote:hover {
     width: calc(var(--card-width) * 1.5);
     height: calc(var(--card-height) * 1.5);
-    background-color: rgb(240, 238, 239);
-}
-
-.stickyNote {
-    width: var(--card-width);
-    height: var(--card-height);
-    background-color: rgb(255, 247, 209); /* rgb(255, 242, 171) */
 }
 
 .stickyNote:hover {
     width: calc(var(--card-width) * 1.75);
     height: calc(var(--card-height) * 1.75);
-    background-color: rgb(255, 247, 209);
 }
 
 .mainNote:hover, .stickyNote:hover {
@@ -117,6 +108,7 @@
     max-height: calc(100% - 25px);
     overflow: hidden;
     flex: 1;
+    animation: fadeIn .75s;
 }
 
 .noteQuotes {
@@ -172,4 +164,9 @@
     opacity: 1;
     top: calc(76% + 40px);
     background-color: #00000085;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
 }

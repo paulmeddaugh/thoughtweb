@@ -5,6 +5,9 @@
     --dark-background-blue: rgb(3 3 45);
     --red-non-aggressive: #cb0300;
     --red-error: rgba(203, 3, 0, .6);
+    --tw-dark-blue: #0d0a42;
+    --tw-dark-blue-800: rgba(13, 10, 66, 0.8);
+    --tw-dark-blue-600: rgba(13, 10, 66, 0.6);
     --link-light-blue: #00BFFF;
     --link-light-blue-400: rgba(0, 191, 255, 0.4);
     --link-light-blue-700: rgba(0, 191, 255, 0.7);

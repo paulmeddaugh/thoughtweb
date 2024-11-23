@@ -3,6 +3,9 @@ To run the project from the root directory, run:
 ```
 cd backend/Frontend && yarn
 cd ..
+dotnet user-secrets set "Authentication:Google:ClientId" "<client_id>" #For Google SSO
+dotnet user-secrets set "Authentication:Google:ClientSecret" "<client_secret>" #For Google SSO
+dotnet user-secrets set "EmailSender:Gmail:Password" "<gmail_password>" #For sending emails using Gmail
 dotnet ef migrations add InitialIdentityMigration
 dotnet ef database update
 dotnet run
@@ -12,14 +15,6 @@ dotnet run
 To change to either "Development" or "Production", run:
 ```
 export ASPNETCORE_ENVIRONMENT="Development"|"Production"
-```
-
-### Testing Google SSO and Sending Email Gmail
-To test Google SSO and Gmail in development, run the following commands:
-```
-dotnet user-secrets set "Authentication:Google:ClientId" "<client_id>"
-dotnet user-secrets set "Authentication:Google:ClientSecret" "<client_secret>"
-dotnet user-secrets set "EmailSender:Gmail:Password" "<gmail_password>"
 ```
 
 ### Generating Controllers

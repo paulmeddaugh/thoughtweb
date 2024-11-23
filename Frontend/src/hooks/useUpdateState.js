@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 /**
  * Customizes the React useState() hook to only require properties to be updated in an object state as
@@ -11,12 +11,12 @@ import { useState } from "react";
 export default function useUpdateState (initState) {
     const [ state, setState ] = useState(initState)
     
-    const setMergeState = (value) => {
+    const setMergeState = useCallback((value) => {
       setState((prevValue) => {
         const newValue = typeof value === 'function' ? value(prevValue) : value
         return newValue ? { ...prevValue, ...newValue } : prevValue
       })
-    }
+    }, [setState]);
     
     return [ state, setMergeState ];
 };

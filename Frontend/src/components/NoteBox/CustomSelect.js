@@ -1,37 +1,68 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import styles from '../../styles/NoteBox/CustomSelect.module.css';
 import NoteBoxNotebook from './NoteBoxNotebook';
 import useUpdateState from '../../hooks/useUpdateState';
+import { createPortal } from 'react-dom';
 
-const CustomSelect = ({ items, onSelect, onDeleteClick, onAddClick, defaultValues }) => {
+const CustomSelect = ({ items, onSelect, onDeleteNotebook, onRenameNotebook, onAddNotebook, defaultValues }) => {
 
     const option = useRef(null);
     const nbOptions = useRef(null);
 
-    const [selectProps, setSelectProps] = useUpdateState({  
-        optionInnerHTML: defaultValues.innerHTML, 
-        'optionData-idnotebook': null,
-        nbOptionsVisible: false 
+    const [selectedOptionProps, setSelectOptionProps] = useUpdateState({  
+        innerHtml: defaultValues?.innerHTML, 
+        idNotebook: defaultValues?.id,
+        optionsVisible: false,
+        containerStyle: null,
+        style: null
     });
+
+    // Calls onSelect function when the option element is mutated to simulate selecting a value
+    const changeNotebookObserver = useMemo(() => new MutationObserver((mutations) => {
+        const isAttributesMutation = mutations.find((mutation) => mutation.type === "attributes");
+        if (isAttributesMutation) {
+            const { innerHTML, value, dataset } = option.current;
+            onSelect?.(innerHTML, value, dataset.idnotebook);
+        }
+    }), [onSelect]);
 
     useEffect(() => {
         changeNotebookObserver.observe(option.current, { attributes: true });
-        nbOptions.current.tabIndex = 20; // Makes nbOptions focusable
-    }, [items]);
+    }, [changeNotebookObserver]);
 
-    const selectOnClick = (e) => {
+    const handleSelectClick = (e) => {
         e.preventDefault();
-        setSelectProps({ nbOptionsVisible: !selectProps.nbOptionsVisible });
-        nbOptions.current.focus();
+        const optionsVisible = !selectedOptionProps?.optionsVisible;
+        const { left, top, width, height } = optionsVisible
+                ? document.getElementById(styles.select)?.getBoundingClientRect()
+                : {}
+        setSelectOptionProps(prev => ({
+            ...prev, 
+            optionsVisible: !selectedOptionProps.optionsVisible,
+            containerStyle: optionsVisible ? { left, top: `${parseInt(top) + parseInt(height)}px` } : null,
+            style: optionsVisible ? { width } : null,
+        }));
     };
 
-    // Calls onSelect function when the option element is mutated to simulate selecting a value
-    const changeNotebookObserver = new MutationObserver((mutations) => {
-        if (mutations.find((mutation) => mutation.type === "attributes")) {
-            onSelect?.(option.current.innerHTML, option.current.value, 
-                option.current.getAttribute('data-idnotebook'));
+    const handleOptionClick = useCallback((notebook) => {
+        const { id, name } = notebook ?? {};
+        setSelectOptionProps({
+            innerHtml: name, 
+            idNotebook: id, 
+            optionsVisible: false 
+        });
+    }, [setSelectOptionProps])
+
+    useEffect(() => {
+        const onResizeId = window.addEventListener("resize", e => {
+            setSelectOptionProps(prev => ({ ...prev, optionsVisible: false }));
+        })
+        return () => {
+            window.removeEventListener("resize", onResizeId);
         }
-    });
+    }, [setSelectOptionProps]);
+
+    // const handleNbOptionsBlur = () => setSelectedOptionProps({ optionsVisible: false });
 
     return (
         <div id={styles.selectContainer} className={styles.configs}>
@@ -39,33 +70,44 @@ const CustomSelect = ({ items, onSelect, onDeleteClick, onAddClick, defaultValue
                 <select 
                     id={styles.select}  
                     defaultValue={defaultValues.innerHTML} 
-                    onMouseDown={selectOnClick}
+                    onMouseDown={handleSelectClick}
                 >
                     <option 
                         id={styles.option} 
                         ref={option}
-                        data-idnotebook={selectProps['optionData-idnotebook']}
+                        data-idnotebook={selectedOptionProps.idNotebook}
                     >
-                        {selectProps.optionInnerHTML}
+                        {selectedOptionProps.innerHtml}
                     </option>
                 </select>
-                <div 
-                    id={styles.nbOptions} 
-                    ref={nbOptions} 
-                    onBlur={() => setSelectProps({ nbOptionsVisible: false })}
-                    className={selectProps?.nbOptionsVisible ? null : styles.nbOptionsInvisible}
-                >
-                    {items?.map((nb, index) => (
-                        <NoteBoxNotebook 
-                            notebook={nb} 
-                            liftSelectProps={setSelectProps}
-                            onDeleteClick={onDeleteClick}
-                            onAddClick={onAddClick}
-                            key={index}
-                        />
-                    ))}
-                </div>
+                <div className={styles.addNotebookIcon}></div>
             </div>
+            {createPortal((
+                <div 
+                    className={styles.nbOptionsContainer}
+                    style={selectedOptionProps?.containerStyle}
+                >
+                    <div 
+                        id={styles.nbOptions} 
+                        className={selectedOptionProps?.optionsVisible ? null : styles.nbOptionsInvisible}
+                        style={selectedOptionProps?.style}
+                        ref={nbOptions} 
+                        tabIndex={20}
+                        autoFocus
+                    >
+                        {items?.map(nb => (
+                            <NoteBoxNotebook 
+                                notebook={nb} 
+                                onSelected={handleOptionClick}
+                                onDeleteClick={onDeleteNotebook}
+                                onRenameClick={onRenameNotebook}
+                                onAddNotebook={onAddNotebook}
+                                key={nb?.id}
+                            />
+                        ))}
+                    </div>
+                </div>
+            ), document.getElementById('portals'))}
         </div>
     );
 }

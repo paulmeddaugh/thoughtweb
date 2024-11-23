@@ -5,6 +5,8 @@
  export class Graph {
 
     multidirectional = true;
+    verticies = [];
+    neighbors = new Map();
     
     /**
      * Constructs a graph from no parameters, only vertices, or vertices and edges.
@@ -14,18 +16,16 @@
      *      have an incident edge.
      */
     constructor(vertices, edges, multidirectional = true) {
-    
-        this.verticies = [];
-        this.neighbors = new Map();
+
         this.setEdgeMultidirectional(multidirectional);
 
         // Adds vertices if passed in
-        if (vertices != undefined) {
+        if (vertices) {
             this.addVertices(vertices);
         }
 
         // Adds edges if passed in
-        if (edges != undefined) {
+        if (edges) {
             this.addEdges(edges);
         }
     }
@@ -320,16 +320,20 @@
      * @returns The neighboring 'id's of the vertex as an array in ascending order.
      */
     getVertexNeighbors(v) {
-        if (typeof v == 'number') return this.neighbors.get(this.getVertex(v)?.id)?.concat();
-        else if (typeof v == 'string') return this.neighbors.get(Number(v))?.concat();
-        else if (v?.hasOwnProperty('id')) return this.neighbors.get(v?.id)?.concat();
+        if (typeof v === 'number') { // index
+            return this.neighbors.get(this.getVertex(v)?.id)?.concat();
+        } else if (typeof v === 'string') { // id
+            return this.neighbors.get(Number(v))?.concat();
+        } else if (v?.hasOwnProperty('id')) { // actual vertex
+            return this.neighbors.get(v?.id)?.concat();
+        }
 
-        return null;
+        return [];
     }
 
     getVertexNeighborsWithWeightZero (v) {
         if (!(typeof v == 'number' || typeof v == 'string')) return [];
-        return this.getVertexNeighbors(v).filter(edge => edge.weight === 0);
+        return this.getVertexNeighbors(v)?.filter(edge => edge.weight === 0);
     }
 
     /**
@@ -476,13 +480,26 @@
         return this.neighbors.size;
     }
 
-    print() {
-        var i = 0;
-        this.neighbors.forEach((edges, vertex) => {
-            let edgesString = (edges.length == 0) ? "-" : edges.reduce((prev, curr) => (prev.v) ? prev.v.id : prev + ", " + curr.v.id);
-            console.log("vertex[" + vertex.id + "]: x: " + vertex.x + ", y: " + vertex.y + " -> " + edgesString);
-            i++;
-        });
+    toString(idsOnly = true) {
+        let str = '', neighborEntries = this.neighbors.entries();
+        for (let [vertexId, edges] of neighborEntries) {
+
+            // edges.reduce((prev, curr) => prev?.v ? prev.v.id : prev + ", " + curr.v.id)
+            const edgesStr = edges.reduce((carry, edge) => {
+                return carry + (idsOnly ? edge.v.id : JSON.stringify(edge.v)) + ", ";
+            }, '');
+
+            // vertex string
+            str += idsOnly
+                ? `Vertex[${vertexId}]: ${edgesStr}\n`
+                : `Vertex[${this.getVertex(String(vertexId))}]: ${edgesStr}\n`
+        }
+
+        return str;
+    }
+
+    print(idsOnly) {
+        console.log(this.toString(idsOnly));
     }
 
     /**
@@ -494,7 +511,7 @@
     clone() {
 
         // Clones the vertices
-        const g = new Graph(this.getVertices(), null, false); // Would reduplicate edges if multidirectional
+        const g = new Graph(this.getVertices(), null, this.multidirectional); // Would reduplicate edges if multidirectional
         // Manually clones each neighbor
         let neighbors = this.getNeighbors();
         for (let i = 0; i < this.size(); i++) {
@@ -506,8 +523,7 @@
                 if (edge.weight !== 1) g.addEdge(v, edge.v);
             }
         }
-
-        g.setEdgeMultidirectional(true);
+        
         return g;
     }
 

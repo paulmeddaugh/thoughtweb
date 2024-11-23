@@ -67,14 +67,13 @@ export const deleteNoteOnBack = async (id) => {
 }
 
 export const createNotebookOnBack = async (notebook) => {
-    checkIfNumbers({ 'notebook.idUser': notebook.idUser, 'notebook.id': notebook.id });
-    checkIfString({ 'notebook.name': notebook.name }); 
+    checkIfString({ 'notebook.idUser': notebook.idUser, 'notebook.name': notebook.name }); 
     return axios.post('/api/notebooks', notebook, defaultConfig);
 }
 
 export const updateNotebookOnBack = async (notebook) => {
-    checkIfNumbers({ 'notebook.idUser': notebook.idUser, 'notebook.id': notebook.id });
-    checkIfString({ 'notebook.name': notebook.name }); 
+    checkIfNumbers({ 'notebook.id': notebook.id });
+    checkIfString({ 'notebook.idUser': notebook.idUser, 'notebook.name': notebook.name }); 
     return axios.put(`/api/notebooks/${notebook.id}`, notebook, defaultConfig);
 }
 
@@ -83,14 +82,15 @@ export const deleteNotebookOnBack = async (idNotebook) => {
     return axios.delete(`/api/notebooks/${idNotebook}`, defaultConfig);
 }
 
-export const addMultipleConnsOnBack = (userId, idNote1, idNote2Array) => {
-    checkIfArrays({ id2Arr: idNote2Array });
+export const addMultipleConnsOnBack = async (userId, idNote1, idNote2Array) => {
+    checkIfArrays({ idNote2Array });
     const connections = Connection.fromIdNote2Array(null, idNote1, idNote2Array, userId);
+    console.log('connections', connections);
 	return axios.post(`/api/connections`, connections, defaultConfig);
 }
 
-export const deleteMultipleConnsOnBack = (userId, idNote1, idNote2Array) => {
-    checkIfArrays({ id2Arr: idNote2Array });
+export const deleteMultipleConnsOnBack = async (userId, idNote1, idNote2Array) => {
+    checkIfArrays({ idNote2Array });
     const connections = Connection.fromIdNote2Array(null, idNote1, idNote2Array, userId);
     return axios.patch(`/api/connections/delete-requests`, connections, defaultConfig);
 }
@@ -100,6 +100,13 @@ export const updateOrderOnBack = async (noteId, position) => {
     checkIfString({ position });
     // const headers = { headers: {'Content-Type': 'text/plain'} };
     return new Promise(resolve => resolve());
+    // checkIfNumbers({ noteId, notebookId });
+    // checkIfString({ position });
+    // if (!notebookId) {
+    //     return axios.put(`/api/notes/${noteId}`, noteId, defaultConfig);
+    // } else {
+    //     return axios.put(`/api/notebooks/${notebookId}`, noteId, defaultConfig);
+    // }
     // return axios.put(`/api/notes/${noteId}/updateOrder`, position, headers, defaultConfig);
 }
 

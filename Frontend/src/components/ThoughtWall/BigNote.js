@@ -24,7 +24,7 @@ const BigNote = ({ noteAndIndex, inlineStyle, onClick, onDoubleClick, onMount, i
         onMount?.(note, index, point);
     }, [index, inlineStyle.left, inlineStyle.top, note, onMount]);
 
-    const clicked = () => {
+    const handleClicked = () => {
         const point = (inlineStyle.left && inlineStyle.top) ? new Point(inlineStyle.left, inlineStyle.top) : null;
         onClick?.(note, index, point);
     }
@@ -43,7 +43,7 @@ const BigNote = ({ noteAndIndex, inlineStyle, onClick, onDoubleClick, onMount, i
             <div 
                 className={`${bigStyles[main ? 'mainNote' : 'stickyNote']} ${noConnections && bigStyles.noConnections}`}
                 style={inlineStyle}
-                onClick={clicked}
+                onClick={handleClicked}
                 // onDoubleClick={handleDoubleClick}
                 onMouseEnter={onMouseEnter}
                 onMouseLeave={onMouseLeave}
@@ -82,9 +82,6 @@ const BigNote = ({ noteAndIndex, inlineStyle, onClick, onDoubleClick, onMount, i
             <div className={bigStyles.noteDate}>
                 {dateFormatted(dateCreated)}
             </div>
-            {/* <div className={bigStyles.doubleClickLabel}>
-               Double click to edit
-            </div> */}
         </>
     )
 }

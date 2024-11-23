@@ -1,5 +1,5 @@
-import { Fragment, useEffect, useRef, useState } from "react";
 import styles from '../../styles/ThoughtWall/NoteWall.module.css';
+import { Fragment, useEffect, useRef, useState } from "react";
 import BigNote from './BigNote';
 import Note from "./Note";
 import Line from "./Line";
@@ -11,9 +11,23 @@ import {
 } from '../../constants/constants';
 import { RED } from "../../constants/colors";
 
-const NoteWall = ({ noteAndIndex, centerPoint, connectingNotes, onMount, extendBoundaryBy,
-    onConnectionClick, onConnectionDoubleClick, onNoteClick, onNoteDoubleClick, onNoteMount, selected, 
-    originBigNoteIdStack, isCloseable, onClose }) => {
+const NoteWall = ({ 
+    note, 
+    index,
+    centerPoint, 
+    connectingNotes, 
+    onMount, 
+    extendBoundaryBy,
+    onConnectionClick, 
+    onConnectionDoubleClick, 
+    onNoteClick, 
+    onNoteDoubleClick, 
+    onNoteMount, 
+    selected, 
+    originBigNoteIdStack, 
+    isCloseable, 
+    onClose 
+}) => {
 
     const [bigNoteAnimation, setBigNoteAnimation] = useState(connectingNotes.length ? MULTI_CONN_BEGIN_ANIM : NO_CONN_BEGIN_ANIM);
     const noteWallRef = useRef(null);
@@ -35,8 +49,8 @@ const NoteWall = ({ noteAndIndex, centerPoint, connectingNotes, onMount, extendB
 
     const bigNoteInlineStyle = () => {
         return (!bigNoteAnimation) ? {} : {
-            // width: noteAndIndex?.note.main ? BIG_NOTE_MAIN_HOVER_WIDTH : BIG_NOTE_STICKY_HOVER_WIDTH,
-            // height: noteAndIndex?.note.main ? BIG_NOTE_MAIN_HOVER_HEIGHT : BIG_NOTE_STICKY_HOVER_HEIGHT,
+            // width: note?.main ? BIG_NOTE_MAIN_HOVER_WIDTH : BIG_NOTE_STICKY_HOVER_WIDTH,
+            // height: note?.main ? BIG_NOTE_MAIN_HOVER_HEIGHT : BIG_NOTE_STICKY_HOVER_HEIGHT,
             border: '1px solid',
             // opacity: .95,
         };
@@ -98,15 +112,18 @@ const NoteWall = ({ noteAndIndex, centerPoint, connectingNotes, onMount, extendB
         }
     }
 
-    const onConnectionClicked = (n, i, p) => {
-        if (!originBigNoteIdStack || !Array.isArray(originBigNoteIdStack)) originBigNoteIdStack = [];
-        originBigNoteIdStack.push(noteAndIndex.note.id);
+    const handleConnectionClick = (n, i, p) => {
+        if (!originBigNoteIdStack || !Array.isArray(originBigNoteIdStack)) {
+            originBigNoteIdStack = [];
+        }
+        originBigNoteIdStack.push(note.id);
 
-        const wall = onConnectionClick(n, i, p, originBigNoteIdStack, () => setConnectionWall(null)); 
-        if (wall) setConnectionWall(wall);
+        setConnectionWall(
+            onConnectionClick(n, i, p, originBigNoteIdStack, () => setConnectionWall(null)) ?? null
+        );
     }
 
-    const onBlur = () => {
+    const handleBlur = () => {
         setConnectionWall(null);
     }
 
@@ -116,19 +133,19 @@ const NoteWall = ({ noteAndIndex, centerPoint, connectingNotes, onMount, extendB
                 <div 
                     className={`${styles.noteWallBoundary} ${(originBigNoteIdStack) ? styles.connectionNoteWall : ''}`} 
                     style={boundaryInline()} 
-                    onBlur={onBlur}
+                    onBlur={handleBlur}
                     onMouseLeave={!WITH_ANIMATION ? connectingNotes.length === 0 ? () => setBigNoteAnimation(0) : null : () => setBigNoteAnimation(0)}
                     ref={noteWallRef}
                 >
                     <BigNote 
-                        noteAndIndex={noteAndIndex} 
+                        noteAndIndex={{ note, index }} 
                         inlineStyle={bigNoteInlineStyle()} 
                         onClick={onNoteClick}
                         onDoubleClick={onNoteDoubleClick}
                         onMount={onNoteMount}
                         onMouseEnter={() => setBigNoteAnimation(1)}
                         onMouseLeave={connectingNotes?.length === 0 ? () => setBigNoteAnimation(0) : null}
-                        isSelected={selected?.note?.id === noteAndIndex.note.id}
+                        isSelected={selected?.note?.id === note.id}
                         isConnectedNote={originBigNoteIdStack}
                         noConnections={connectingNotes?.length === 0}
                         ref={bigNoteRef}
@@ -139,11 +156,11 @@ const NoteWall = ({ noteAndIndex, centerPoint, connectingNotes, onMount, extendB
                             <Note 
                                 noteAndIndex={{ note: connObj.note, index: connObj.index }}
                                 inlineStyle={connectingNoteInlineStyle(i)}
-                                onClick={onConnectionClicked}
+                                onClick={handleConnectionClick}
                                 onDoubleClick={onConnectionDoubleClick}
                                 onMount={onNoteMount}
                                 isSelected={selected?.note?.id === connObj.note.id}
-                                isConnection={false}
+                                isConnection={true}
                             />
                             <Line 
                                 angle={getLineAngle(i)} 
@@ -175,13 +192,13 @@ const NoteWall = ({ noteAndIndex, centerPoint, connectingNotes, onMount, extendB
                 onMouseLeave={WITH_ANIMATION ? () => setBigNoteAnimation(0) : null}
             >
                 <BigNote 
-                    noteAndIndex={noteAndIndex} 
+                    noteAndIndex={{ note, index }} 
                     inlineStyle={bigNoteInlineStyle()} 
                     onClick={onNoteClick}
                     onDoubleClick={onNoteDoubleClick}
                     onMount={onNoteMount}
                     onMouseEnter={() => setBigNoteAnimation(1)}
-                    isSelected={selected?.note?.id === noteAndIndex.note.id}
+                    isSelected={selected?.note?.id === note.id}
                     noConnections={connectingNotes?.length === 0}
                     ref={bigNoteRef}
                 >
@@ -191,7 +208,7 @@ const NoteWall = ({ noteAndIndex, centerPoint, connectingNotes, onMount, extendB
                                 <Note 
                                     noteAndIndex={noteAndIndex}
                                     inlineStyle={connectingNoteInlineStyle(i)}
-                                    onClick={onConnectionClicked}
+                                    onClick={handleConnectionClick}
                                     onMount={onNoteMount}
                                     isSelected={selected?.note?.id === noteAndIndex.note.id}
                                     isConnection={true}
@@ -221,7 +238,7 @@ const NoteWall = ({ noteAndIndex, centerPoint, connectingNotes, onMount, extendB
                                 <Note 
                                     noteAndIndex={noteAndIndex}
                                     inlineStyle={connectingNoteInlineStyle(i + connectingNotes.length / 2)}
-                                    onClick={onConnectionClicked}
+                                    onClick={handleConnectionClick}
                                     onMount={onNoteMount}
                                     isSelected={selected?.note?.id === noteAndIndex.note.id}
                                     isConnection={true}

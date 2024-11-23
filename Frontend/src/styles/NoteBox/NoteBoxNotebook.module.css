@@ -1,56 +1,123 @@
 .nbOption {
-    padding: 12px;
-    font-size: 16pt;
+    display: flex;
+    background-color: var(--notebox-input-hover-background-color);
+    cursor: pointer;
+    color: dimgray;
+    font: 700 1.5rem Corbel Light;
+    letter-spacing: -0.005rem;
+    max-width: 100%;
+}
+
+
+.nbOption:hover,
+.nbOption.activeNbOption {
+    --notebox-input-hover-background-color: #1E90FF;
+    /* background: #1E90FF; */
+    /* background: #00BFFF; */
+    /* background: #0d0a42; */
+    color: whitesmoke;
+}
+
+.text {
+    padding: 12px 0 12px 12px;
+    flex: 1;
+    white-space: nowrap;
+    overflow-x: auto;
+    position: relative;
     display: flex;
     justify-content: space-between;
-    white-space: nowrap;
-    background-color: lightgrey;
-    font: 400 1.5rem Corbel;
-    letter-spacing: -0.005;
-    color: dimgray;
 }
 
-.nbOption:hover {
-    background: #1E90FF;
-    color: white;
+.text::after {
+    content: '';
+    position: sticky;
+    width: 24px;
+    height: 100%;
+    background: linear-gradient(to right, rgba(0,0,0,0) 0%, var(--notebox-input-hover-background-color) 100%);
+    z-index: 20;
+    top: 0;
+    right: 0;
+    pointer-events: none;
+    flex-shrink: 0;
+    margin-left: -12px; /* to take smaller space */
 }
 
-.removeNb {
-    background: url('../../resources/removeIcon.png');
-    background-size: contain;
-    width: 15px;
-    height: 15px;
-    display: inline-block;
+.moreOptionsIcon, .plusIcon {
+    --_icon-color: #808080;
+    --_icon-background-color: rgba(0, 0, 0, 0.04);
+
+    display: flex;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    padding: 6px;
+    margin-left: 8px;
+    margin-right: 12px;
+    border-radius: 50px;
+    align-self: center;
+    flex-shrink: 0;
+    background-color: var(--_icon-background-color);
+}
+
+.moreOptionsIcon svg {
+    width: 10px;
+    height: 10px;
+    fill: var(--_icon-color);
+}
+
+.nbOption:hover .moreOptionsIcon {
+    --_icon-background-color: rgba(255, 255, 255, 0.08);
+    --_icon-color: whitesmoke;
+}
+
+.nbOption.activeNbOption .moreOptionsIcon,
+.nbOption .moreOptionsIcon:hover,
+.nbOption:hover .plusIcon {
+    --_icon-background-color: rgba(255, 255, 255, 0.24);
+    --_icon-color: whitesmoke;
+}
+
+.moreOptionsContainer {
     position: absolute;
-    right: 0%;
-    margin: 8px;
-    opacity: 0;
-    transition: .5s ease;
+    translate: -50% 18px;
+    z-index: 30;
+    background-color: whitesmoke;
+    padding: 2px;
+    border-radius: 3px;
+    width: 200px;
+    font-size: 1rem;
+    box-shadow: 0 0 3px grey;
 }
 
-.removeNb:hover {
-    background: url('../../resources/removeIconHover.png');
-    background-size: contain;
+.moreOptionsBorder {
+    background-color: lightgray;
+    border-radius: 3px;
+    padding: 1px;
+    display: grid;
+    grid-gap: 1px;
 }
 
-.addNb {
-    background: url('../../resources/addIconHover.png');
-    background-size: contain;
-    width: 15px;
-    height: 15px;
-    display: inline-block;
-    position: absolute;
-    right: 0%;
-    margin: 9px;
-    opacity: 0;
-    transition: .5s ease;
+.moreOptionsRow {
+    padding: 8px;
+    cursor: pointer;
+    color: dimgrey;
+    background-color: rgb(232, 232, 232);
 }
 
-.addNb:hover {
-    background: url('../../resources/addIcon.png');
-    background-size: contain;
+.moreOptionsRow:hover {
+    color: royalblue; /* #1E90FF */
 }
 
-.nbOption:hover .removeNb, .nbOption:hover .addNb {
-    opacity: 1;
+.plusIcon {
+    padding: 4px;
+}
+
+.plusIcon svg {
+    width: 12px;
+    height: 12px;
+    fill: var(--_icon-color);
+}
+
+.addNotebookOption {
+    border-top: 1px solid rgba(128, 128, 128, .28);
 }

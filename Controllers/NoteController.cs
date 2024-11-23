@@ -63,7 +63,7 @@ namespace backend.Controllers
 
             if (id != note.Id)
             {
-                return BadRequest();
+                return BadRequest("Parameter id and note id do not match.");
             }
 
             _dbContext.Entry(actualNote).State = EntityState.Detached;
@@ -93,11 +93,13 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<ActionResult<Note>> CreateNote(Note note)
         {
-            // Verify note has some id as logged in user
+            // Verify note has same id as logged in user
             if (!NoteBelongsToUser(note))
             {
                 return Unauthorized();
             }
+
+            note.Id = 0; // Will instruct EF Core to treat this record as new
 
             _dbContext.Notes.Add(note);
             await _dbContext.SaveChangesAsync();

@@ -3,7 +3,7 @@
 }
 
 .headerColor {
-    background-color: #0d0a42;
+    background-color: var(--tw-dark-blue);
 }
 
 .infoBox {

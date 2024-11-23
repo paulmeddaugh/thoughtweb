@@ -111,7 +111,8 @@ namespace backend.Controllers
 
                     // The user does not have an account yet => create an account.
                     var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-                    var newUser = new CustomUser { UserName = email, Email = email };
+                    var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+                    var newUser = new CustomUser { UserName = email, Email = email, Name = name };
 
                     var createResult = await _userManager.CreateAsync(newUser);
                     if (createResult.Succeeded)

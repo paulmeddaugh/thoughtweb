@@ -1,44 +1,32 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useUnmount } from '../../hooks/useUnmount.js';
 import styles from '../../styles/Editor/Editor.module.css';
 import Note from '../../scripts/notes/note.js';
-import Notebook from '../../scripts/notes/notebook';
 import EditorConnection from './EditorConnection';
 import AddConnection from './AddConnection';
 import { binarySearch, binaryInsert } from '../../scripts/utility/utility';
-import { useAppContent } from '../../context/appContent.js';
-import { addMultipleConnsOnBack, createNotebookOnBack, createNoteOnBack, deleteMultipleConnsOnBack, updateNoteOnBack } from '../../services/axios.js';
-import { Link } from 'react-router-dom';
-import { useSharedState } from '../../hooks/useGlobalState.js';
+import { createNoteOnBack } from '../../services/axios.js';
 import { useUser } from '../../context/user.js';
 import { useNotebox } from '../../context/notebox.js';
+import { useNoteGraph } from '../../context/noteGraph.js';
+import { useSelected } from '../../context/selected.js';
+import { useNotebooks } from '../../context/notebooks.js';
+import { useNavigate } from 'react-router-dom';
 
-const automaticallySave = false;
+const AUTOMATIC_SAVING = false;
 
 const notebookIcon = require("../../resources/notebook.png");
 
 const noteTypeDescriptions = {
-	main: "Appears as a its own centering note in the Thought Wall.",
-	sticky: 'Appears only when a connection for "Main" note types and not as its own centering note.',
-}
-
-const connectionsWithWeightZero = (connections) => {
-	return connections?.filter(conn => conn.weight === 0);
+	main: "Appears as a note that connections circle around on the Wall.",
+	sticky: 'Appears only when connected to another "Main" note type.',
 }
 
 const Editor = () => {
-	const { 
-		graph,
-		setGraph,
-		userOrder,
-		setUserOrder,
-		selected,
-		setSelected,
-		notebooks,
-		setNotebooks,
-		newNoteId
-	} = useAppContent();
-	const { note: selectedNote, index } = selected;
+	const { graph, updateNote, addConnectionsToNote, updateConnectionsOfNote, setGraph } = useNoteGraph();
+	const { notebooks, createNotebook, getNotebookName } = useNotebooks();
+	const { selected, setSelectedNote, isSelectedNoteEdited, newNoteId } = useSelected();
+	const { note: selectedNote, index: selectedIndex } = selected;
 	const { userId } = useUser();
 	const { isPinned: isNoteboxPinned } = useNotebox();
 
@@ -48,14 +36,18 @@ const Editor = () => {
 	const [notebookName, setNotebookName] = useState('');
 	const [connections, setConnections] = useState([]);
 
-	const [initialGraphValues, setInitialGraphValues] = useState(
-		{ loadedSize: false, highestId: 0, notesAdded: 0 }
-	);
+	const [initialGraphValues, setInitialGraphValues] = useState({ 
+		loadedSize: false, 
+		highestId: 0, 
+		notesAdded: 0 
+	});
 
 	const dataListRef = useRef(null);
 	const notebookRef = useRef(null)
 	const titleRef = useRef(null);
 	const textRef = useRef(null);
+
+	const navigate = useNavigate()
 
 	useEffect(() => { // Stores the loading graph values for better performance in algorithms
 		// Skips component first mounting
@@ -91,23 +83,27 @@ const Editor = () => {
 	}, [graph]);
 
 	useEffect(() => { // Updates editor values when a different note is selected
+		const { id, title, text, quotes, idNotebook, main, dateCreated, allNotesPosition } = selectedNote ?? {};
 		setNoteInEditor(new Note(
-			selectedNote?.id ?? null,
-			selectedNote?.title ?? '',
-			selectedNote?.text ?? '',
-			selectedNote?.quotes ?? '',
-			selectedNote?.idNotebook ?? -1,
-			selectedNote?.main ?? false,
-			selectedNote?.dateCreated ?? 'No Date',
-			selectedNote?.allNotesPosition ?? null,
+			id ?? null,
+			title ?? '',
+			text ?? '',
+			quotes ?? '',
+			idNotebook ?? -1,
+			main ?? false,
+			dateCreated ?? 'No Date',
+			allNotesPosition ?? null,
 		));
-		setNoteInEditorIndex(index);
+		setNoteInEditorIndex(selectedIndex);
 		setNotebookName(getNotebookName(selectedNote?.idNotebook) ?? '');
-		setConnections(graph.getVertexNeighborsWithWeightZero(index)); // Format - [ { v: { id: _ } weight: _ }, etc. ]
-	}, [selectedNote, index, dataListRef]);
+		console.log('selected change graph', graph.toString(), graph.getVertexNeighbors(selectedIndex), selectedIndex);
+		setConnections(graph.getVertexNeighbors(selectedIndex)); // Format - [ { v: { id: _ } weight: _ }, etc. ]
+	}, [selectedNote, selectedIndex, dataListRef, getNotebookName, graph]);
 
 	useEffect(() => { // Marks note as unsaved if connections have changed
-		if (initialGraphValues.loadedSize !== false) onInputChange();
+		if (initialGraphValues.loadedSize !== false) {
+			onInputChange();
+		}
 	}, [connections]);
 
 	useEffect(() => {
@@ -121,7 +117,7 @@ const Editor = () => {
 		const { loadedSize } = initialGraphValues;
 		if (loadedSize === false) return;
 
-		// Removes unsaved notes from graph, and determines new graphIndices for userOrder: 
+		// Removes unsaved notes from graph, and determines new graphIndices for noteOrder: 
 		// O(m), where m is the number of all new notes
 		const newGraph = graph.clone(), newGraphIndices = new Map();
 		for (let i = loadedSize; i < newGraph.size(); i++) {
@@ -133,193 +129,16 @@ const Editor = () => {
 			}
 		}
 		
-		// Removes from userOrder, and updates graph indices: O(n)
-		setUserOrder(userOrder.filter((obj, i, arr) => {
-			if (newGraphIndices.has(obj.id)) obj.graphIndex = newGraphIndices.get(obj.id);
-			return obj.id > 0;
-		}));
-		
 		if (selectedNote?.id < 0) {
 			const firstNote = newGraph.getVertex(0);
-			setSelected({ note: firstNote ?? null, index: firstNote ? 0 : null });
+			setSelectedNote(firstNote ?? null, firstNote ? 0 : null);
 		}
 
 		setGraph(newGraph);
 	}, []);
 
-	useUnmount(() => { // Prompts user to save note if it has been edited
-		if (selectedNote?.id && noteInEditor?.id && graph.indexOf(noteInEditor) !== -1) updateOnBackFront();
-	}, [selectedNote]);
-
-	const updateOnBackFront = (e) => {
-
-		// Determines notebook id if existent
-		let { id: notebookId } = notebooks.find((nb) => nb.name === notebookName) || { id: null };
-
-		const updated = { idNotebook: notebookId };
-		const hasChanged = isEditorChanged(updated);
-
-		if (hasChanged && !e) { // Changes made and diff note selected or connections have changed
-
-			if (!automaticallySave && !window.confirm(`Would you like to save note '${noteInEditor.title}'?`)) {
-				const note = graph.getVertex(String(noteInEditor.id));
-				note.title = (note.title[0] === '﻿') ? note.title.slice(1) : note.title; // '﻿' indicated unsaved
-
-				graph.updateVertex(note);
-				setGraph(graph.clone());
-				return false;
-			}
-
-		} else if (!hasChanged && !e) { // No changes made and different note selected
-			return false;
-		}
-
-		if (notebookName === '') {
-			window.alert("A notebook must be selected.");
-			return false;
-		}
-
-		let alertMessage = '';
-
-		createNotebookIfNotExists({ id: notebookId, name: notebookName })
-			.then((notebook) => {
-				if (notebook.id !== notebookId) {
-					alertMessage = `Notebook '${notebookName}' created.`;
-					notebookId = notebook.id;
-				}
-				addUpdateNote();
-			})
-			.catch(() => {
-				return false;
-			});
-
-		function addUpdateNote () {
-
-			const title = String(noteInEditor.title);
-			let updatingNote = { 
-				...noteInEditor, 
-				title: (title[0] === '﻿') ? title.slice(1) : title,
-				idNotebook: Number(notebookId),
-			};
-
-			if (selectedNote?.id < 0) { // Adding a note
-
-				updatingNote.idUser = userId; // Add to backend first to get new note 'id'
-				createNoteOnBack(updatingNote).then((response) => {
-
-					let idUser, graphIndex;
-					({ idUser, ...updatingNote } = { ...updatingNote, id: response.data.id });
-
-					// Add note to front
-					graph.updateVertex(updatingNote, graphIndex = graph.indexOf(noteInEditor)); 
-					setInitialGraphValues({ ...initialGraphValues, notesAdded: ++initialGraphValues.notesAdded });
-
-					const updatingIndex = userOrder.findIndex(obj => obj.id === noteInEditor.id);
-					userOrder[updatingIndex] = {
-							id: updatingNote.id,
-							graphIndex,
-							order: updatingNote.allNotesPosition,
-						}
-					setUserOrder(userOrder.concat());
-					
-					// Add note connections to back and front
-					const connectionIds = connections.map((conn) => conn.v.id);
-					addMultipleConnsOnBack(userId, updatingNote.id, connectionIds);
-					for (let conn of connections) { 
-						graph.addEdge(updatingNote, conn.v);
-					}
-					setGraph(graph.clone());
-
-					// Only updates editor states if button clicked (not if other note selected)
-					if (e) {
-						setNoteInEditor(updatingNote);
-						setSelected({ note: updatingNote, index: index });
-					}
-
-					alertMessage += ((alertMessage) ? '\n' : '') + `Note '${updatingNote.title}' created.`;
-				});
-
-			// Updating a note
-			} else {
-				// On frontend (note)
-				if (e) {
-					setNoteInEditor(updatingNote); // Only updates if button clicked (not other note selected)
-					setSelected({ note: updatingNote, index: index });
-				}
-				graph.updateVertex(updatingNote);
-
-				// On backend (note)
-				updatingNote.idUser = userId;
-				updateNoteOnBack(updatingNote);
-				delete updatingNote.idUser;
-
-				// Gets the connections that were added and removed
-				const prevConns = graph.getVertexNeighbors(updatingNote);
-				const [newConns, removeConns] = getAddedAndRemovedConnections(prevConns);
-
-				// On frontend (note's connections)
-				updateConnectionsOnFront(updatingNote.id, newConns, removeConns);
-
-				// On backend (note's connections)
-				if (newConns.length !== 0) {
-					addMultipleConnsOnBack(userId, updatingNote.id, newConns);
-				}
-				if (removeConns.length !== 0) {
-					deleteMultipleConnsOnBack(userId, updatingNote.id, removeConns);
-				}
-
-				alertMessage += ((alertMessage) ? '\n' : '') + `Note '${updatingNote.title}' updated.`;
-			}
-		}
-	};
-
-	/**
-	 * An asynchronous function that creates a new notebook on front and backend if the passed in 
-	 * notebook does not exist.
-	 * 
-	 * @param {Notebook} notebook The notebook to create if not in the notebooks array.
-	 */
-	const createNotebookIfNotExists = async (notebook) => {
-		return new Promise((resolve, reject) => {
-
-			const [ exists ] = (notebook.id) ? binarySearch(notebooks, notebook.id, 1) : [];
-
-			if (!exists) {
-				if (!window.confirm("Create notebook '" + notebookName + "'?")) {
-					reject();
-				} else { // Creates the new Notebook
-
-					Object.assign(notebook, { // Notebook object to send
-						idUser: userId, 
-						dateCreated: new Date(),
-					});
-						
-					createNotebookOnBack(notebook).then((response) => {
-						notebook.id = response.data.id;
-						notebooks.push(new Notebook(response.data.id, notebookName));
-						setNotebooks(notebooks);
-
-						resolve(notebook);
-					});
-				}
-			} else {
-				resolve(notebook);
-			}
-		})
-	}
-
-	const updateConnectionsOnFront = (noteId, newConns, removeConns) => {
-		for (let newConn of newConns) { // Adds new connections
-			graph.addEdge({ id: noteId }, { id: newConn });
-		}
-		for (let removeConn of removeConns) { // Deletes connections
-			graph.removeEdge({ id: noteId }, { id: removeConn });
-		}
-		setGraph(graph.clone());
-	}
-	
 	// Determines connections to add and remove to backend: O(n)
-	const getAddedAndRemovedConnections = (prevConns) => {
+	const getAddedAndRemovedConnections = useCallback((prevConns) => {
 		const newConns = [], removeConns = [];
 		let connIndex = 0, prevIndex = 0; // Iterates 0 upwards
 		while (prevConns[prevIndex] || connections[connIndex]) {
@@ -344,34 +163,131 @@ const Editor = () => {
 		}
 
 		return [newConns, removeConns];
-	}
+	}, [connections])
 
-	/**
-	 * Binary searches for the name of a notebook from its id: O(log n)
-	 * 
-	 * @param {*} id The value of the 'id' property of the notebook to find.
-	 * @returns null if notebook not found.
-	 */
-	const getNotebookName = (id) => {
-		if (typeof id !== 'number' || id === 0) return null;
-		const nbName = binarySearch(notebooks, id, 1)[0].name;
-		return nbName ? nbName : null;
-	}
+	const noteChanged = useCallback((updated = {}) => {
+		const originalNote = Note.from(graph.getVertex(noteInEditorIndex));
+		const newNote = Object.assign({ ...noteInEditor }, updated);
+		return !originalNote.equals(newNote);
+	}, [graph, noteInEditor, noteInEditorIndex])
+
+	const connectionChanged = useCallback(() => {
+		const prevConns = graph.getVertexNeighbors(noteInEditorIndex);
+		return !(getAddedAndRemovedConnections(prevConns).every(conns => conns.length === 0));
+	}, [getAddedAndRemovedConnections, graph, noteInEditorIndex])
+
+	const isEditorChanged = useCallback((updated = {}) => {
+		return noteChanged(updated) || connectionChanged();
+	}, [connectionChanged, noteChanged])
+
+	const handleSubmit = useCallback(async (e) => {
+
+		console.log('handle submit');
+
+		// Determines notebook id if existent
+		let { id: notebookId } = notebooks.find((nb) => nb.name === notebookName) || { id: null };
+
+		const updated = { idNotebook: notebookId };
+		const hasChanged = isEditorChanged(updated);
+
+		if (hasChanged && !e) { // Changes made and diff note selected or connections have changed
+			if (!AUTOMATIC_SAVING && !window.confirm(`Would you like to save note '${noteInEditor.title}'?`)) {
+				isSelectedNoteEdited(false);
+				return false;
+			}
+		} else if (!hasChanged && !e) { // No changes made and different note selected
+			return false;
+		}
+
+		let alertMessage = '';
+
+		// create notebook if non-existant
+		if (notebookName && notebookId === null) {
+			if (!window.confirm("Create notebook '" + notebookName + "'?")) {
+				alert("Please enter the name of an existing notebook "
+					+ "or blank to select no notebook");
+				return false;
+			} else { // Creates the new Notebook
+				await createNotebook(notebookName);
+			}
+		}
+
+		console.log('noteInEditor', noteInEditor);
+		let updatingNote = { 
+			...noteInEditor, 
+			idNotebook: Number(notebookId),
+		};
+
+		// UNTESTED
+		if (selectedNote?.id < 0) { // Adding a note
+			console.log('adding a note')
+
+			updatingNote.idUser = userId; // Add to backend first to get new note 'id'
+			createNoteOnBack(updatingNote).then((response) => {
+
+				let idUser;
+				({ idUser, ...updatingNote } = { ...updatingNote, id: response.data.id });
+
+				// Add note to front
+				graph.updateVertex(updatingNote); 
+				setInitialGraphValues(prev => ({ ...prev, notesAdded: ++prev.notesAdded }));
+				
+				addConnectionsToNote(updatingNote, connections);
+
+				// Only updates editor states if button clicked (not if other note selected)
+				if (e) {
+					setNoteInEditor(updatingNote);
+					setSelectedNote(updatingNote, selectedIndex);
+				}
+
+				alertMessage += ((alertMessage) ? '\n' : '') + `Note '${updatingNote.title}' created.`;
+			});
+
+		// Updating a note
+		} else {
+			// Only updates if button clicked (not other note selected)
+			if (e) {
+				setNoteInEditor(updatingNote); 
+				setSelectedNote(updatingNote, selectedIndex);
+			}
+
+			try {
+				await updateNote(updatingNote);
+
+				// Gets the connections that were added and removed
+				const prevConns = graph.getVertexNeighbors(updatingNote);
+				const [newConns, removeConns] = getAddedAndRemovedConnections(prevConns);
+				await updateConnectionsOfNote(updatingNote.id, newConns, removeConns);
+			} catch (e) {
+				console.log('e', e);
+			}
+
+			alertMessage += ((alertMessage) ? '\n' : '') + `Note '${updatingNote.title}' updated.`;
+		}
+	}, [addConnectionsToNote, connections, createNotebook, getAddedAndRemovedConnections, graph, selectedIndex, isEditorChanged, isSelectedNoteEdited, noteInEditor, notebookName, notebooks, selectedNote?.id, setSelectedNote, updateConnectionsOfNote, updateNote, userId]);
+
+	useUnmount(() => { // Prompts user to save note if it has been edited
+		if (selected?.edited) {
+			console.log('unmount submit');
+			handleSubmit();
+		}
+	}, [selectedNote?.id]);
 
 	const onAddConnection = (noteId, noteTitle) => {
-		binaryInsert(connections, { id: Number(noteId) });
-        setConnections(connections.concat());
+		console.log('adding')
+        setConnections(prev => binaryInsert(prev.concat(), { id: Number(noteId) }));
 	};
 
 	const onClickConnection = (e, note) => {
 		const index = graph.getVertices().findIndex((n) => n.id === note.id);
 		console.log(note, index);
-		setSelected({ note: note, index });
+		setSelectedNote(note, index);
 	}
 
 	const onRemoveConnection = (e, note) => {
 		const index = binarySearch(connections, note.id, 0, 'v.id')[1];
 		connections.splice(index, 1);
+		console.log('removing')
 		setConnections(connections.concat());
 	};
 
@@ -453,32 +369,10 @@ const Editor = () => {
 		updated.idNotebook = notebooks.find((nb) => nb.name === nbName)?.id ?? null;
 
 		const hasChanged = isEditorChanged(updated);
-
-		if (hasChanged) {
-			const note = graph.getVertex(noteInEditorIndex);
-			if (note && note.title[0] !== '﻿') {
-				note.title = '﻿' + note.title;
-				graph.updateVertex(note);
-				setGraph(graph.clone());
-				if (e) setTimeout(() => e.target.focus(), 5);
-			}
-		}
+		isSelectedNoteEdited(hasChanged)
 	}
 
-	const isEditorChanged = (updated = {}) => {
-		return noteChanged(updated) || connectionChanged();
-	}
-
-	const noteChanged = (updated = {}) => {
-		const originalNote = graph.getVertex(noteInEditorIndex);
-		const newNote = Object.assign({ ...noteInEditor }, updated);
-		return JSON.stringify(originalNote) !== JSON.stringify(newNote);
-	}
-
-	const connectionChanged = () => {
-		const prevConns = graph.getVertexNeighborsWithWeightZero(noteInEditorIndex);
-		return !(getAddedAndRemovedConnections(prevConns).every(conns => conns.length === 0));
-	}
+	const handleMinimizeIconClick = useCallback((e) => navigate('/thoughtwall'), [navigate])
 
 	const noteListWithoutConnections = () => { // O(log n * c)
 
@@ -487,7 +381,7 @@ const Editor = () => {
 			? initialGraphValues.loadedSize - 1 + Math.abs(selectedNote?.id) // Unsaved note: O(1)
 			: binarySearch(noteList, selectedNote?.id)[1], 1); // Removes current note id: O (log n)
 
-		if (connections) for (let conn of connections) { // Removes connection ids
+		for (let conn of connections) { // Removes connection ids
             const index = binarySearch(noteList, conn.v.id)[1];
             noteList.splice(index, 1);
         }
@@ -501,7 +395,7 @@ const Editor = () => {
 
     return (
         <form className={styles.form}>
-			<div className={styles.flexRow}>
+			<div className={styles.notebookRow}>
 				<img id={styles.notebookIcon} src={notebookIcon} alt="" />
 				<input 
 					ref={notebookRef}
@@ -516,11 +410,10 @@ const Editor = () => {
 				/>
 				<datalist id="notebookOptions" ref={dataListRef}>
 					{notebooks?.map((nb, index) => (
-						nb.name !== 'All Notebooks' ? (
-							<option value={nb.name} key={index}>{nb.name}</option>
-						) : null
+						<option value={nb.name} key={index}>{nb.name}</option>
 					))}
 				</datalist>
+				<div className={styles.windowedScreenIcon} onClick={handleMinimizeIconClick} />
 				{/* <Link to='/' className={`link ${styles.thoughtWallLink}`}>See In Wall</Link> */}
 			</div>
 
@@ -614,14 +507,14 @@ const Editor = () => {
 				</div>
 
 				<div id={styles.connectionsRow}>
-					{connections?.map((connectingNote, i) => (
-						!!connectingNote && <EditorConnection 
+					{connections?.map((connectingNote, i) => !!connectingNote && (
+						<EditorConnection 
 							note={getConnectingNote(connectingNote?.v.id)} 
 							onClick={onClickConnection}
 							onRemove={onRemoveConnection}
 							className={styles.connectionContainer}
 							lineClassName={styles.connectionLine}
-							key={i}
+							key={connectingNote?.v.id ?? i}
 						/>
 					))}
 					<AddConnection 
@@ -641,7 +534,7 @@ const Editor = () => {
 				id={styles.addUpdate}
 				className={`${selectedNote === null ? styles.addUpdateDisabled : styles.addUpdateEnabled} button`}
 				value={selectedNote === null ? 'No note' : selectedNote?.id < 0 ? "Create" : "Update"} 
-				onClick={updateOnBackFront}
+				onClick={handleSubmit}
 				disabled={selectedNote === null ? true : false}
 			/>
         </form>

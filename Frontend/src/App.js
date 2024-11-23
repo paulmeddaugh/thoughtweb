@@ -1,9 +1,8 @@
-import { useCallback, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { positionAfter } from './scripts/utility/customOrderingAsStrings';
-import { useAppContent } from './context/appContent.js';
-import { NO_NOTES_POSITION_BEGIN } from './constants/constants';
 import styles from './styles/App.module.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles/universalStyles.css';
+
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/LoginComponents/Login.js';
 import CreateAccount from './components/LoginComponents/CreateAccount.js';
 import ForgotPassword from './components/LoginComponents/ForgotPassword';
@@ -13,15 +12,20 @@ import Editor from './components/Editor/Editor';
 import CreateNoteButton from './components/Editor/CreateNoteButton';
 import Account from './components/Account';
 import ThoughtWall from './components/ThoughtWall/ThoughtWall';
-import Note from './scripts/notes/note';
 import UpdatePassword from './components/LoginComponents/ChangePassword';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './styles/universalStyles.css';
-
 import { NoteboxProvider } from './context/notebox.js';
+
+import { useEffect } from 'react';
 import useForm from './hooks/useForm.js';
 import { loginValidators } from './scripts/forms/validate.js';
 import { useUser } from './context/user.js';
+import { useNoteGraph } from './context/noteGraph.js';
+import { useNoteOrder } from './context/noteOrder.js';
+import { useSelected } from './context/selected.js';
+import { useNotebooks } from './context/notebooks.js';
+import { useLoading } from './context/loading.js';
+
+import loadJournal from './scripts/graph/loadJournal.js';
 
 const LoggedOutStack = ({ children }) => {
     const { formState, formErrors, onFormInputChange } = useForm({ usn: '', pwd: '' }, loginValidators);
@@ -45,29 +49,7 @@ const LoggedOutStack = ({ children }) => {
 }
 
 const LoggedInStack = ({ children }) => {
-    const { graph, setGraph, userOrder, setUserOrder, setSelected, newNoteId, setNewNoteId } = useAppContent();
-
-    const handleCreateNoteClick = useCallback((e, prevRoutePath) => {
-        // Determines new ordering value of the new note
-        const newPosition = userOrder.length !== 0 ? 
-              positionAfter(userOrder[userOrder.length - 1]?.order) 
-            : NO_NOTES_POSITION_BEGIN;
-
-        /* Resets the new note id decrementing count to -1 if clicked away from editor,
-         * as the Editor deletes all unsaved notes when unmounting for efficiency. */ 
-        const newId = (prevRoutePath !== '/editor') ? -1 : newNoteId;
-        const newNote = new Note(newId, '', '', '', null, true, new Date(), newPosition);
-
-        graph.addVertex(newNote);
-        setGraph(graph.clone());
-
-        userOrder.push({ id: newId, graphIndex: graph.size() - 1, order: newPosition });
-        setUserOrder(userOrder.concat());
-
-        setNewNoteId(newId - 1); // Decrements new id count
-        setSelected({ note: newNote, index: graph.size() - 1 });
-    }, [graph, newNoteId, setGraph, setNewNoteId, setSelected, setUserOrder, userOrder]);
-
+    const { graph } = useNoteGraph();
     return (
         <NoteboxProvider>
             <BrowserRouter>
@@ -87,23 +69,56 @@ const LoggedInStack = ({ children }) => {
                     <Route path="/account" element={<Account />} />
                     <Route path="*" element={<Navigate to="/thoughtwall" replace />} />
                 </Routes>
-                <CreateNoteButton onClick={handleCreateNoteClick} />
+                <CreateNoteButton />
             </BrowserRouter>
         </NoteboxProvider>
     );
 }
 
 const App = () => {
-    const { graph } = useAppContent();
     const { user } = useUser();
+    const { graph, setGraph } = useNoteGraph();
+    const { setNoteOrder } = useNoteOrder();
+    const { setNotebooks } = useNotebooks();
+    const { setSelectedNote } = useSelected();
+    const { setLoading } = useLoading();
+    useEffect(() => {
+        if (user?.id) {
+            console.log('reload firing');
+            loadJournal(user.id, (g, nbs, noteOrder) => {
+                // Notebooks
+                setNotebooks(nbs);
+
+                // Selected Note
+                // const getOrderOfNote = (noteId) => String(noteOrder[noteId] ?? noteId);
+                // const firstOrderedIndex = g.getVertices()?.reduce((first, note, index) => {
+                //     const isBefore = comparePositions(getOrderOfNote(first.noteId), getOrderOfNote(note.id));
+                //     return isBefore ? { noteId: note.id, index } : first;
+                // }, { noteId: -1, index: -1 })
+                // if (firstOrderedIndex) {
+                //     setSelectedNote(g.getVertex(firstOrderedIndex), firstOrderedIndex);
+                // }
+                setSelectedNote(g.getVertex(0), 0);
+
+                // Notes and order
+                setGraph(g);
+                setNoteOrder(noteOrder);
+
+                setLoading(false);
+            });
+        }
+    }, [user?.id, setLoading, setNotebooks, setGraph, setSelectedNote, setNoteOrder]);
     return (
-        <main className={styles.fullSize}>
-            {(!graph || !user?.id) ? (
-                <LoggedOutStack />
-            ) : (
-                <LoggedInStack/>
-            )}
-        </main>
+        <>
+            <div id='portals'></div>
+            <main className={styles.fullSize}>
+                {(!graph || !user?.id) ? (
+                    <LoggedOutStack />
+                ) : (
+                    <LoggedInStack/>
+                )}
+            </main>
+        </>
     );
 }
 

@@ -4,6 +4,7 @@ import Graph from './graph.js';
 import { stringFromSQL } from '../utility/utility.js';
 import { comparePositions, positionBefore } from '../utility/customOrderingAsStrings.js';
 import { getJournalDataFromBack, updateOrderOnBack } from '../../services/axios.js';
+import { NoteOrder } from '../notes/noteOrder.js';
 
 let NO_NOTES_ORDER_BEGIN = 'O';
 
@@ -19,68 +20,77 @@ export default function loadJournal (idUser, callback, idNotebook, asDisplayable
     if (!idUser) return;
 
     getJournalDataFromBack(idUser).then((response) => {
-        let graph = new Graph(), notebooks = [], userOrder = [];
+        let graph = new Graph(), notebooks = [], noteOrder = { allNotebooks: {} };
 
-        console.log('response', response);
         const { notebooks: nbs, notes, connections } = response.data;
 
         // Loads user note data into the graph and order array
         if (notes) {
             for (let noteData of notes) {
-                let note = Note.fromJournalEndpoint(noteData);
+                const note = Note.fromJournalEndpoint(noteData);
                 graph.addVertex(note);
-                userOrder.push({ id: note.id, graphIndex: graph.size() - 1, order: note?.allNotesPosition });
+                if (note?.allNotesPosition) {
+                    noteOrder.allNotebooks[note?.id] = note.allNotesPosition;
+                }
             }
         }
-        userOrder.sort((s1, s2) => comparePositions(s2.order, s1.order));
 
         // Adds an order value to any notes without
-        if (userOrder.length !== 0 && !userOrder[0]?.order) {
-            let firstOrderIndex = userOrder.findIndex((val) => val.order);
-            if (firstOrderIndex === -1) { // No order vals found
-                updateOrder(firstOrderIndex = userOrder.length - 1, () => NO_NOTES_ORDER_BEGIN);
-            }
+        // if (userOrder.length !== 0 && !userOrder[0]?.order) {
+        //     let firstOrderIndex = userOrder.findIndex((val) => val.order);
+        //     if (firstOrderIndex === -1) { // No order vals found
+        //         updateOrder(firstOrderIndex = userOrder.length - 1, () => NO_NOTES_ORDER_BEGIN);
+        //     }
 
-            while (firstOrderIndex) {
-                updateOrder(firstOrderIndex - 1, () => positionBefore(userOrder[firstOrderIndex--].order));
-            }
+        //     while (firstOrderIndex) {
+        //         updateOrder(firstOrderIndex - 1, () => positionBefore(userOrder[firstOrderIndex--].order));
+        //     }
 
-            /**
-             * Updates a note's 'allNotesPosition' property and userOrder 'order' property from the note's 
-             * index in userOrder to whatever the orderValFunc parameter returns, updating both on front
-             * and back ends.
-             * 
-             * @param {number} userOrderIndex The index of the note (pointed to by 'graphIndex') to update.
-             * @param {function} orderFunc A function which returns the value to change the note's order to.
-             */
-            function updateOrder (userOrderIndex, orderValFunc) {
-                const note = graph.getVertex(userOrder[userOrderIndex].graphIndex);
+        //     /**
+        //      * Updates a note's 'allNotesPosition' property and userOrder 'order' property from the note's 
+        //      * index in userOrder to whatever the orderValFunc parameter returns, updating both on front
+        //      * and back ends.
+        //      * 
+        //      * @param {number} userOrderIndex The index of the note (pointed to by 'graphIndex') to update.
+        //      * @param {function} orderFunc A function which returns the value to change the note's order to.
+        //      */
+        //     function updateOrder (userOrderIndex, orderValFunc) {
+        //         const note = graph.getVertex(userOrder[userOrderIndex].graphIndex);
 
-                // Updates on frontend
-                userOrder[userOrderIndex].order = note.allNotesPosition = orderValFunc();
-                graph.updateVertex(note);
+        //         // Updates on frontend
+        //         userOrder[userOrderIndex].order = note.allNotesPosition = orderValFunc();
+        //         graph.updateVertex(note);
 
-                // Updates on backend
-                updateOrderOnBack(note.id, note.allNotesPosition);
-            }
-        }
+        //         // Updates on backend
+        //         updateOrderOnBack(note.id, note.allNotesPosition);
+        //     }
+        // }
 
         // Loads note connections into graph
         if (connections) {
             for (let connection of connections) {
-                graph.addEdge(graph.getVertex(String(connection.idNote1)), 
-                    graph.getVertex(String(connection.idNote2)));
+                graph.addEdge(
+                    graph.getVertex(String(connection.idNote1)), 
+                    graph.getVertex(String(connection.idNote2))
+                );
+                // graph.addEdge(
+                //     graph.getVertex(String(connection.idNote2)), 
+                //     graph.getVertex(String(connection.idNote1))
+                // );
             }
         }
 
         // Loads notebook data into an array
         if (nbs) {
-            for (let nbData of nbs) {
-                let notebook = new Notebook(nbData.id, nbData.name);
+            for (let nb of nbs) {
+                let notebook = new Notebook(nb.id, nb.name, idUser, nb.dateCreated, nb?.noteOrder ?? {});
                 notebooks.push(notebook);
+                if (nb?.noteOrder) {
+                    noteOrder[nb.id] = nb?.noteOrder;
+                }
             }
         }
 
-        callback?.(graph, notebooks, userOrder);
+        callback?.(graph, notebooks, noteOrder);
     });
 }

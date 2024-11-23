@@ -3,10 +3,13 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { AppContentProvider } from './context/appContent';
 import { LoadingProvider } from './context/loading';
 import { AuthTokensProvider } from './context/authTokens';
 import { UserProvider } from './context/user';
+import { NoteGraphProvider } from './context/noteGraph';
+import { NotebooksProvider } from './context/notebooks';
+import { SelectedProvider } from './context/selected';
+import { NoteOrderProvider } from './context/noteOrder';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -14,9 +17,15 @@ root.render(
     <AuthTokensProvider>
       <UserProvider>
         <LoadingProvider>
-          <AppContentProvider>
-            <App />
-          </AppContentProvider>
+          <SelectedProvider>
+            <NoteGraphProvider>
+              <NotebooksProvider>
+                <NoteOrderProvider>
+                  <App />
+                </NoteOrderProvider>
+              </NotebooksProvider>
+            </NoteGraphProvider>
+          </SelectedProvider>
         </LoadingProvider>
       </UserProvider>
     </AuthTokensProvider>

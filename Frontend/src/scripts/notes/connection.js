@@ -7,7 +7,7 @@ export class Connection {
     idUser;
 
     constructor (id, idNote1, idNote2, idUser) {
-        checkIfNumbers({ id, idNote1, idNote2 });
+        checkIfNumbers({ idNote1, idNote2 });
         checkIfString({ idUser });
         this.id = id;
         this.idNote1 = idNote1;

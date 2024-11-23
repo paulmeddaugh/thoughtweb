@@ -5,7 +5,6 @@ const UserContext = createContext(null);
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const userId = user?.id;
-
     return (
         <UserContext.Provider value={{
             user, 
@@ -17,6 +16,4 @@ export const UserProvider = ({ children }) => {
     )
 }
 
-export function useUser() {
-    return useContext(UserContext);
-}
+export const useUser = () => useContext(UserContext);

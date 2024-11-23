@@ -1,9 +1,8 @@
 import styles from '../../styles/LoginComponentStyles/Login.module.css';
 import { Link, useSearchParams } from 'react-router-dom';
 import Notification from '../global/Notification';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLoading } from '../../context/loading';
-import { invalidInputMessage } from '../../scripts/forms/validate';
 import { getCurrentUserFromBackend, getGoogleAccessTokens, loginWithCredentials, setAxiosBearerToken } from '../../services/axios';
 import { useUser } from '../../context/user';
 import { useAuthTokens } from '../../context/authTokens';
@@ -17,6 +16,7 @@ const Login = ({ formState, formErrors, onFormStateChange }) => {
     const [notificationProps, setNotificationProps] = useState(null);
     const { setLoading } = useLoading();
     const [searchParams] = useSearchParams();
+    const token = searchParams.get("token");
 
     const loadUserData = useCallback(async () => {
         try {
@@ -67,7 +67,6 @@ const Login = ({ formState, formErrors, onFormStateChange }) => {
 
     useEffect(() => {
         // FIRES TWICE
-        const token = searchParams.get("token")
         if (token) {
             (async function () {
                 setLoading({ status: 'Loading...', icon: 0 });
@@ -76,10 +75,10 @@ const Login = ({ formState, formErrors, onFormStateChange }) => {
                 const authTokens = (await getGoogleAccessTokens(token)
                     .catch(e => {
                         setLoading({
-                            status: `Could not verify Google log in: ${e}`,
+                            status: `Could not verify Google log in: ${e?.response?.data}`,
                             linkText: "Retry"
                         });
-                    })).data;
+                    }))?.data;
                 console.log('authTokens', authTokens);
                 if (!authTokens) {
                     setLoading({
@@ -94,7 +93,7 @@ const Login = ({ formState, formErrors, onFormStateChange }) => {
                 loadUserData();
             })();
         }
-    }, [loadUserData, setAuthTokens, setLoading, setUser]);
+    }, [token, loadUserData, searchParams, setAuthTokens, setLoading, setUser]);
 
     return (
         <section 

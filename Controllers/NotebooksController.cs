@@ -119,6 +119,12 @@ namespace backend.Controllers
                 return Unauthorized();
             }
 
+            // Finds notes of notebook
+            var notesToDelete = await _dbContext.Notes
+                .Where(n => n.IdNotebook == id)
+                .ToListAsync();
+            _dbContext.Notes.RemoveRange(notesToDelete);
+            
             _dbContext.Notebooks.Remove(notebook);
             await _dbContext.SaveChangesAsync();
 

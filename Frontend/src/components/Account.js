@@ -1,4 +1,5 @@
-import { useAppContent } from '../context/appContent';
+import { useNotebooks } from '../context/notebooks';
+import { useNoteGraph } from '../context/noteGraph';
 import { useUser } from '../context/user';
 import styles from '../styles/Account.module.css';
 
@@ -9,7 +10,8 @@ const formatDate = (date) => {
 const Account = () => {
     const { user } = useUser();
     const { name, username, email, dateCreated } = user ?? {};
-    const { graph, notebooks } = useAppContent();
+    const { graph } = useNoteGraph();
+    const { notebooks } = useNotebooks();
     const noteCount = graph.size() ?? 0;
     const notebookCount = notebooks.length - 1;
     return (
