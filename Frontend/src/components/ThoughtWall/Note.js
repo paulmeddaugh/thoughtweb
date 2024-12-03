@@ -7,12 +7,9 @@ const Note = ({ noteAndIndex, onClick, onDoubleClick, onMount, isSelected, inlin
     const noteRef = useRef(null);
 
     useEffect(() => {
-        const point = (inlineStyle?.left && inlineStyle?.top) 
-            ? new Point(inlineStyle.left, inlineStyle.top) 
-            : null;
         const { left, top } = noteRef?.current?.getBoundingClientRect();
         onMount?.(note, index, new Point(left, top));
-    }, [index, inlineStyle.left, inlineStyle.top, note, onMount]);
+    }, [index, inlineStyle, note, onMount]);
 
     const handleDoubleClick = (e) => {
         return handleClick(e, false);

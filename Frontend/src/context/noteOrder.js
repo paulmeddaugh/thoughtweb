@@ -1,6 +1,6 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNoteGraph } from "./noteGraph";
-import { comparePositions, positionAfter, positionBefore, positionBetween } from "../scripts/utility/customOrderingAsStrings";
+import { comparePositions, convertBase10ToBase95, positionAfter, positionBefore, positionBetween } from "../scripts/utility/customOrderingAsStrings";
 import { useSelected } from "./selected";
 import { useNotebooks } from "./notebooks";
 
@@ -8,7 +8,8 @@ const NoteOrderContext = createContext(null);
 
 export const NoteOrderProvider = ({ children }) => {
     const [noteOrder, setNoteOrder] = useState({ allNotebooks: {} });
-    const { notebookId } = useSelected().selected;
+    const { selected, setSelectedNote } = useSelected();
+    const { notebookId } = selected;
     const { graph, updateNote } = useNoteGraph();
     const { updateNotebookOrder } = useNotebooks();
 
@@ -20,7 +21,7 @@ export const NoteOrderProvider = ({ children }) => {
         if (noteId.id) {
             noteId = noteId.id;
         }
-        return String(noteOrder[notebookKey]?.[noteId] ?? noteId);
+        return String(noteOrder[notebookKey]?.[noteId] ?? convertBase10ToBase95(noteId));
     }, [notebookKey, noteOrder]);
 
     const orderedNotes = useMemo(() => {
@@ -33,9 +34,15 @@ export const NoteOrderProvider = ({ children }) => {
             : ordered.filter(note => notebookId === note.idNotebook);
     }, [getNoteOrder, graph, notebookId])
 
-    const setAllNotebooksOrder = (orders) => {
+    useEffect(() => {
+        if (selected.willSelectFirstOrderedNote && orderedNotes.length) {
+            setSelectedNote(orderedNotes[0], graph.indexOf(orderedNotes[0]));
+        }
+    }, [graph, orderedNotes, selected.willSelectFirstOrderedNote, setSelectedNote]);
+
+    const setAllNotebooksOrder = useCallback((orders) => {
         setNoteOrder(prev => ({ ...prev, allNotebooks: orders }));
-    }
+    }, [])
 
     const updateNoteOrderAt = useCallback(async (note, index) => {
         const generatedPosition = (() => {

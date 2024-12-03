@@ -1,16 +1,26 @@
 import styles from '../../styles/ThoughtWall/Note.module.css';
 import bigStyles from '../../styles/ThoughtWall/BigNote.module.css';
-import { useEffect, forwardRef, useMemo } from 'react';
+import { useEffect, forwardRef, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Point from '../../scripts/notes/point';
+import { useNotePoints } from '../../context/notePoints';
+import { useNoteGraph } from '../../context/noteGraph';
+import { useSelected } from '../../context/selected';
 
-const dateFormatted = (date) => new Date(date).toLocaleDateString('en-us', { month:"short", day:"numeric" });
+const dateToMonthDayString = (date) => new Date(date).toLocaleDateString('en-us', { month:"short", day:"numeric" });
 
-const BigNote = ({ noteAndIndex, inlineStyle, onClick, onDoubleClick, onMount, isSelected, onMouseEnter, 
-    onMouseLeave, isConnectedNote, noConnections, children }, ref) => {
-
-    const navigate = useNavigate();
-
+const BigNote = ({ 
+    noteAndIndex,
+    defaultPoint,
+    inlineStyle,
+    onClick,
+    onMount,
+    isSelected,
+    onMouseEnter,
+    onMouseLeave,
+    isConnectedNote,
+    children
+}, ref) => {
     const { note, index, main, title, text, quotes, dateCreated } = useMemo(() => {
         return { 
             note: noteAndIndex?.note ?? {}, 
@@ -18,21 +28,42 @@ const BigNote = ({ noteAndIndex, inlineStyle, onClick, onDoubleClick, onMount, i
             ...(noteAndIndex?.note ?? {}),
         };
     }, [noteAndIndex]);
+    const { updateNote } = useNoteGraph();
+    const navigate = useNavigate();
+    const { setSelectedNote } = useSelected()
+    const [draggingProps, setDraggingProps] = useState(null);
+    const point = note.point && !Point.isCoordinatesZeroZero(note.point)
+        ? note.point
+        : defaultPoint;
 
     useEffect(() => {
-        const point = (inlineStyle.left && inlineStyle.top) ? new Point(inlineStyle.left, inlineStyle.top) : null;
-        onMount?.(note, index, point);
-    }, [index, inlineStyle.left, inlineStyle.top, note, onMount]);
+        onMount?.(note, index, Point.fromInlineStyle(inlineStyle));
+    }, [index, inlineStyle, note, onMount]);
 
-    const handleClicked = () => {
-        const point = (inlineStyle.left && inlineStyle.top) ? new Point(inlineStyle.left, inlineStyle.top) : null;
-        onClick?.(note, index, point);
+    const handleClicked = e => {
+        onClick?.(note, index, Point.fromInlineStyle(inlineStyle));
     }
 
-    // const handleDoubleClick = () => {
-    //     const point = (inlineStyle.left && inlineStyle.top) ? new Point(inlineStyle.left, inlineStyle.top) : null;
-    //     onDoubleClick?.(note, index, point);
-    // }
+    const handleDragStart = e => {
+        const { left, top, width, height } = e.target.getBoundingClientRect();
+        setDraggingProps({
+            startCenterOffsetX: e.clientX - left - (width / 2),
+            startCenterOffsetY: e.clientY - top - (height / 2),
+        })
+    };
+    const handleDragEnd = async e => {
+        e.preventDefault();
+        const thoughtwall = e.target.parentElement;
+        const { left, top } = thoughtwall.getBoundingClientRect();
+        const { startCenterOffsetX, startCenterOffsetY } = draggingProps;
+        note.point = new Point(
+            e.clientX - startCenterOffsetX - parseInt(left) + thoughtwall.scrollLeft,
+            e.clientY - startCenterOffsetY - parseInt(top) + thoughtwall.scrollTop,
+        );
+        setSelectedNote(note, index);
+        await updateNote(note);
+        setDraggingProps(null);
+    }
 
     const handleFullscreenIconClick = e => {
         navigate("/editor");
@@ -41,15 +72,20 @@ const BigNote = ({ noteAndIndex, inlineStyle, onClick, onDoubleClick, onMount, i
     return (
         <>
             <div 
-                className={`${bigStyles[main ? 'mainNote' : 'stickyNote']} ${noConnections && bigStyles.noConnections}`}
-                style={inlineStyle}
+                className={[
+                    bigStyles[main ? 'mainNote' : 'stickyNote'],
+                    draggingProps ? bigStyles.dragging : '',
+                ].join(' ')}
+                style={Point.toInlineStyle(point)}
                 onClick={handleClicked}
-                // onDoubleClick={handleDoubleClick}
                 onMouseEnter={onMouseEnter}
                 onMouseLeave={onMouseLeave}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                draggable="true"
                 ref={ref}
             >
-                <div className={`${bigStyles.content} ${bigStyles[main ? 'contentMain' : 'contentSticky']}`}>
+                <div className={`${bigStyles.content} ${bigStyles[main ? 'contentMain' : 'contentSticky']} grabbable`}>
                     {title && (
                         <div className={bigStyles.titleContainer}>
                             <div 
@@ -62,10 +98,6 @@ const BigNote = ({ noteAndIndex, inlineStyle, onClick, onDoubleClick, onMount, i
                             >
                                 {title}
                             </div>
-                            <div 
-                                className={bigStyles.fullscreenIcon}
-                                onClick={handleFullscreenIconClick}
-                            />
                         </div>
                     )}
                     {text && (
@@ -77,11 +109,18 @@ const BigNote = ({ noteAndIndex, inlineStyle, onClick, onDoubleClick, onMount, i
                         </div>
                     )}
                 </div>
+                <div className={bigStyles.noteDate}>
+                    {dateToMonthDayString(dateCreated)}
+                </div>
+                <div className={bigStyles.iconContainer}>
+                    <div 
+                        className={bigStyles.fullscreenIcon}
+                        onClick={handleFullscreenIconClick}
+                    />
+                </div>
                 {children}
             </div>
-            <div className={bigStyles.noteDate}>
-                {dateFormatted(dateCreated)}
-            </div>
+            
         </>
     )
 }

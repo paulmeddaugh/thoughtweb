@@ -7,11 +7,11 @@ export const SelectedProvider = ({ children }) => {
     const [newNoteId, setNewNoteId] = useState(-1);
 
     const setSelectedNote = useCallback((note, graphIndex) => {
-        setSelected(prev => ({ ...prev, note, index: graphIndex }));
+        setSelected(({ willSelectFirstOrderedNote, ...prev }) => ({ ...prev, note, index: graphIndex }));
     }, [setSelected])
 
     const setSelectedNotebook = useCallback((notebookId) => {
-        setSelected(prev => ({ ...prev, notebookId: notebookId && Number(notebookId) }));
+        setSelected(prev => ({ ...prev, notebookId: notebookId && Number(notebookId), willSelectFirstOrderedNote: true }));
     }, [setSelected])
 
     const isSelectedNoteEdited = useCallback((edited) => {

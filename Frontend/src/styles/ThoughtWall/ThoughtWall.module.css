@@ -7,6 +7,7 @@
     background-repeat: repeat;
     background-attachment: local;
     box-shadow: inset 0 0 100px rgba(32, 32, 32, 0.386);
+    cursor: pointer;
 }
 
 canvas {

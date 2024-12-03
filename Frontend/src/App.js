@@ -69,7 +69,6 @@ const LoggedInStack = ({ children }) => {
                     <Route path="/account" element={<Account />} />
                     <Route path="*" element={<Navigate to="/thoughtwall" replace />} />
                 </Routes>
-                <CreateNoteButton />
             </BrowserRouter>
         </NoteboxProvider>
     );
@@ -80,7 +79,7 @@ const App = () => {
     const { graph, setGraph } = useNoteGraph();
     const { setNoteOrder } = useNoteOrder();
     const { setNotebooks } = useNotebooks();
-    const { setSelectedNote } = useSelected();
+    const { setSelectedNote, setSelectedNotebook } = useSelected();
     const { setLoading } = useLoading();
     useEffect(() => {
         if (user?.id) {
@@ -89,25 +88,17 @@ const App = () => {
                 // Notebooks
                 setNotebooks(nbs);
 
-                // Selected Note
-                // const getOrderOfNote = (noteId) => String(noteOrder[noteId] ?? noteId);
-                // const firstOrderedIndex = g.getVertices()?.reduce((first, note, index) => {
-                //     const isBefore = comparePositions(getOrderOfNote(first.noteId), getOrderOfNote(note.id));
-                //     return isBefore ? { noteId: note.id, index } : first;
-                // }, { noteId: -1, index: -1 })
-                // if (firstOrderedIndex) {
-                //     setSelectedNote(g.getVertex(firstOrderedIndex), firstOrderedIndex);
-                // }
-                setSelectedNote(g.getVertex(0), 0);
-
                 // Notes and order
                 setGraph(g);
                 setNoteOrder(noteOrder);
 
+                // Will select the first note of ordered notes once calculated
+                setSelectedNotebook(null);
+
                 setLoading(false);
             });
         }
-    }, [user?.id, setLoading, setNotebooks, setGraph, setSelectedNote, setNoteOrder]);
+    }, [user?.id, setLoading, setNotebooks, setGraph, setSelectedNote, setNoteOrder, setSelectedNotebook]);
     return (
         <>
             <div id='portals'></div>

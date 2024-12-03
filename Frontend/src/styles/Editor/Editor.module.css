@@ -14,7 +14,7 @@ html, body {
     display: flex;
     flex-direction: column;
     overflow-x: auto;
-    background-color: whitesmoke;
+    background-color: var(--editor-background-color);
     container-type: inline-size;
     container-name: form;
 }

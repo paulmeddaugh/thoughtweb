@@ -4,28 +4,22 @@ import styles from '../../styles/NoteBox/NoteBoxNote.module.css';
 import { useSelected } from '../../context/selected';
 
 const isNoteActive = (selected, note, dragging) => selected.note?.id === note?.id && !dragging;
+const handlerWithNoteAndIndex = (func, note, index) => (e) => func?.(e, note, index);
 
-const NoteBoxNote = ({ note, index, onSelect, onNoteDragStart, onNoteDrag, onNoteDrop, onDelete, dragging, style }, ref) => {
+const NoteBoxNote = ({ note, index, onSelect, onDoubleClick, onNoteDragStart, onNoteDrag, onNoteDrop, onDelete, dragging, style }, ref) => {
 
     const { selected } = useSelected();
     const isUnsavedEditedNote = selected.edited && isNoteActive(selected, note, dragging);
 
-    const handleClick = (e) => onSelect?.(e, note, index);
-    const handleDragStart = (e) => {
-        onNoteDragStart?.(e, note, index)
-    };
-    const handleDrag = (e) => onNoteDrag?.(e, note, index);
-    const handleDragEnd = (e) => onNoteDrop?.(e, note, index);
-    const deleteNote = (e) => (() => onDelete?.(e, note, index))();
-
     return (
         <ListGroupItem
             as="a"
-            onClick={handleClick}
-            onTouchEnd={handleClick}
-            onDragStart={handleDragStart}
-            onDrag={handleDrag}
-            onDragEnd={handleDragEnd}
+            onClick={handlerWithNoteAndIndex(onSelect, note, index)}
+            onDoubleClick={handlerWithNoteAndIndex(onDoubleClick, note, index)}
+            onTouchEnd={handlerWithNoteAndIndex(onSelect, note, index)}
+            onDragStart={handlerWithNoteAndIndex(onNoteDragStart, note, index)}
+            onDrag={handlerWithNoteAndIndex(onNoteDrag, note, index)}
+            onDragEnd={handlerWithNoteAndIndex(onNoteDrop, note, index)}
             href={`#${note?.title ?? ''}`}
             style={{ ...style }}
             active={isNoteActive(selected, note, dragging)}
@@ -55,7 +49,7 @@ const NoteBoxNote = ({ note, index, onSelect, onNoteDragStart, onNoteDrag, onNot
             </div>
             
             {note?.id !== null && !dragging ? (
-                <div className={styles.removeNote} onClick={deleteNote} />
+                <div className={styles.removeNote} onClick={handlerWithNoteAndIndex(onDelete, note, index)} />
             ) : null}
         </ListGroupItem>
     )

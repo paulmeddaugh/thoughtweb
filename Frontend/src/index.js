@@ -10,6 +10,7 @@ import { NoteGraphProvider } from './context/noteGraph';
 import { NotebooksProvider } from './context/notebooks';
 import { SelectedProvider } from './context/selected';
 import { NoteOrderProvider } from './context/noteOrder';
+import { NotePointsProvider } from './context/notePoints';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -21,7 +22,9 @@ root.render(
             <NoteGraphProvider>
               <NotebooksProvider>
                 <NoteOrderProvider>
-                  <App />
+                  <NotePointsProvider>
+                    <App />
+                  </NotePointsProvider>
                 </NoteOrderProvider>
               </NotebooksProvider>
             </NoteGraphProvider>

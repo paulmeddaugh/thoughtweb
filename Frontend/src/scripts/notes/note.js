@@ -1,5 +1,6 @@
 import { checkIfNoteProps } from "../utility/errorHandling.js";
 import { stringFromSQL } from "../utility/utility.js";
+import Point from "./point.js";
 
 export default class Note {
     id = null;
@@ -11,8 +12,9 @@ export default class Note {
     main = null;
     dateCreated = null;
     allNotesPosition = null;
+    point = null;
 
-    constructor (id, title, text, quotes, idNotebook, main, dateCreated, allNotesPosition) {
+    constructor (id, title, text, quotes, idNotebook, main, dateCreated, allNotesPosition, point) {
 
         // Clones a note object
         if (arguments.length === 1 && id && checkIfNoteProps({ id })) {
@@ -27,6 +29,7 @@ export default class Note {
         this.setEditables(idNotebook, title, text, quotes, main);
         this.setDateCreated(dateCreated);
         this.setAllNotesPosition(allNotesPosition);
+        this.setPoint(point);
     }
 
     setId(id) {
@@ -57,6 +60,14 @@ export default class Note {
         this.allNotesPosition = position;
     }
 
+    setPoint(point) {
+        if (point && !(point.hasOwnProperty('x') && point.hasOwnProperty('y'))) {
+            throw new Error("A Note's point must be null or have 'x' and 'y' properties.");
+        }
+
+        this.point = point;
+    }
+
     setEditables (idNotebook, title, text, quotes, isMain) {
         this.setIdNotebook(idNotebook);
         this.setTitle(title);
@@ -69,7 +80,7 @@ export default class Note {
         if (!noteObject) {
             return new Note();
         }
-        const { id, title, text, quotes, idNotebook, main, dateCreated, allNotesPosition } = noteObject;
+        const { id, title, text, quotes, idNotebook, main, dateCreated, allNotesPosition, point } = noteObject;
         return new Note(
             id, 
             stringFromSQL(title), 
@@ -78,13 +89,13 @@ export default class Note {
             idNotebook,
             main, 
             dateCreated, 
-            allNotesPosition
+            allNotesPosition,
+            point,
         );
     }
 
     static fromJournalEndpoint (noteData) {
-        // Revise when migrating
-        const { id, title, text, quotes, idNotebook, isMain, dateCreated, globalOrder } = noteData;
+        const { id, title, text, quotes, idNotebook, isMain, dateCreated, allNotesPosition, x, y } = noteData;
         return new Note(
             id, 
             stringFromSQL(title), 
@@ -93,7 +104,8 @@ export default class Note {
             idNotebook,
             isMain, 
             dateCreated, 
-            globalOrder
+            allNotesPosition,
+            new Point(x, y)
         );
     }
 
@@ -101,11 +113,12 @@ export default class Note {
         const newNote = { 
             ...note, 
             idUser, 
-            globalOrder: note.allNotesPosition,
             isMain: note.main,
+            x: note?.point?.x,
+            y: note?.point?.y,
         }
-        delete newNote.allNotesPosition;
         delete newNote.main;
+        delete newNote.point;
         return newNote;
     }
 

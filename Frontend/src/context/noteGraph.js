@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useState } from "react";
 import { useUser } from "./user";
-import { addMultipleConnsOnBack, deleteMultipleConnsOnBack, deleteNoteOnBack, updateNoteOnBack } from "../services/axios";
+import { addMultipleConnsOnBack, createNoteOnBack, deleteMultipleConnsOnBack, deleteNoteOnBack, updateNoteOnBack } from "../services/axios";
 import Note from "../scripts/notes/note";
 
 const NoteGraphContext = createContext(null);
@@ -8,11 +8,41 @@ const NoteGraphContext = createContext(null);
 export const NoteGraphProvider = ({ children }) => {
     const [graph, setGraph] = useState(null);
     const { userId } = useUser();
+
+    const addFrontendNote = useCallback((point) => {
+        const newNote = new Note(-1, '', '', '', null, true, new Date(), "", point);
+        setGraph(prev => {
+            const newGraph = prev.clone();
+            newGraph.addVertex(newNote);
+            return newGraph;
+        });
+        return newNote;
+    }, [])
+
+    /**
+     * After creating a note with with addFrontendNote helper function to the frontend only, this 
+     * submits the note to the backend and replaces the frontend note with the one received from
+     * the backend.
+     */
+    const addNote = useCallback(async negativeIdNote => {
+        const noteDTO = Note.toUpdateDTO(negativeIdNote, userId);
+        const response = await createNoteOnBack(noteDTO);
+        const newNote = { ...negativeIdNote, id: response.data.id };
+        setGraph(prev => {
+            const newGraph = prev.clone();
+            newGraph.updateVertex(newNote, newGraph.size() - 1);    
+            newGraph.print();
+            return newGraph;
+        })
+        return newNote;
+    }, [userId])
+
     const updateNote = useCallback(async (note) => {
         graph.updateVertex(note);
         setGraph(graph.clone());
         await updateNoteOnBack(Note.toUpdateDTO(note, userId));
     }, [graph, userId]);
+
     const deleteNote = useCallback((noteId) => {
         // Delete from backend
         if (noteId >= 0) {
@@ -65,7 +95,17 @@ export const NoteGraphProvider = ({ children }) => {
         }
 	}
     return (
-        <NoteGraphContext.Provider value={{ graph, updateNote, deleteNote, deleteNotesOfNotebook, addConnectionsToNote, updateConnectionsOfNote, setGraph }}>
+        <NoteGraphContext.Provider value={{ 
+            graph, 
+            addFrontendNote,
+            addNote, 
+            updateNote, 
+            deleteNote, 
+            deleteNotesOfNotebook, 
+            addConnectionsToNote, 
+            updateConnectionsOfNote, 
+            setGraph 
+        }}>
             {children}
         </NoteGraphContext.Provider>
     );

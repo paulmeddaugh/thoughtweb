@@ -108,3 +108,16 @@ export function positionBetween(firstPos, secondPos) {
   assertDev(isValidPosition(position))
   return position
 }
+
+export function convertBase10ToBase95(number) {
+  assertDev(typeof number === 'number');
+  let remainders = [], divided = number;
+  do {
+    const remainder = divided % 95;
+    divided = parseInt(divided / 95);
+    remainders.unshift(
+      String.fromCharCode(32 + remainder)
+    )
+  } while (divided);
+  return remainders.join('');
+}

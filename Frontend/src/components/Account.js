@@ -18,15 +18,15 @@ const Account = () => {
         <div className={styles.main}>
             <form className={styles.info}>
                 <div className={styles['row']}>
-                    <b>Name</b>
+                    <b>Name:</b>
                     <label>{name ?? '-'}</label>
                 </div>
                 <div className={styles['row']}>
-                    <b>Username</b>
+                    <b>Username:</b>
                     <label>{username}</label>
                 </div>
                 <div className={styles['row']}>
-                    <b>Email</b>
+                    <b>Email:</b>
                     <label>{email ?? '-'}</label>
                 </div>
                 <div className={styles['read-only-row']}>
@@ -34,12 +34,12 @@ const Account = () => {
                     <label>{formatDate(dateCreated)}</label>
                 </div>
                 <div className={styles['read-only-row']}>
-                    <b>Notebook Count:&nbsp;</b>
-                    <label>{notebookCount}</label>
+                    <b>Total Notes:&nbsp;</b>
+                    <label>{noteCount}</label>
                 </div>
                 <div className={styles['read-only-row']}>
-                    <b>Notes Count:&nbsp;</b>
-                    <label>{noteCount}</label>
+                    <b>Total Notebooks:&nbsp;</b>
+                    <label>{notebookCount}</label>
                 </div>
             </form>
         </div>

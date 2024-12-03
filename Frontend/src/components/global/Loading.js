@@ -22,8 +22,8 @@ const MARGIN_FROM_BORDER = 2;
 
 const JUST_NOTEBOOK_WIDTH_FROM = 390;
 const JUST_NOTEBOOK_HEIGHT_FROM = 514;
-// const JUST_NOTEBOOK_WIDTH_TO = 273;
-// const JUST_NOTEBOOK_HEIGHT_TO = 359.8;
+const JUST_NOTEBOOK_WIDTH_TO = 312;
+const JUST_NOTEBOOK_HEIGHT_TO = 411.2;
 
 const linearLineX1 = memoize((i) => {
     return Math.max(-MARGIN_FROM_BORDER, -window.innerWidth + (window.innerWidth / ANIMATION_LINES_COUNT * 2) * i);
@@ -41,16 +41,15 @@ const linearLinesPath = svgPathFromPreloaderLines(
 const startAtFirstPoint = Array.from({ length: ANIMATION_LINES_COUNT }, () => Math.round(Math.random()));
 
 const manipulatedJustNotebookPath = translatePath(
-    // scalePathTo(
-    //     justNotebookPath, 
-    //     JUST_NOTEBOOK_WIDTH_FROM, 
-    //     JUST_NOTEBOOK_HEIGHT_FROM, 
-    //     JUST_NOTEBOOK_WIDTH_TO, 
-    //     JUST_NOTEBOOK_HEIGHT_TO
-    // ),
-    justNotebookPath,
-    window.innerWidth / 2 - (JUST_NOTEBOOK_WIDTH_FROM / 2),
-    window.innerHeight / 2 - (JUST_NOTEBOOK_HEIGHT_FROM / 2),
+    scalePathTo(
+        justNotebookPath, 
+        JUST_NOTEBOOK_WIDTH_FROM, 
+        JUST_NOTEBOOK_HEIGHT_FROM, 
+        JUST_NOTEBOOK_WIDTH_TO, 
+        JUST_NOTEBOOK_HEIGHT_TO
+    ),
+    window.innerWidth / 2 - (JUST_NOTEBOOK_WIDTH_TO / 2),
+    window.innerHeight / 2 - (JUST_NOTEBOOK_HEIGHT_TO / 2),
 );
 
 const thoughtwebDraw = {

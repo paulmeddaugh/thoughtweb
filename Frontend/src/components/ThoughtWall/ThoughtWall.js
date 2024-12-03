@@ -21,6 +21,9 @@ import { useNotebox } from "../../context/notebox";
 import { useNoteGraph } from "../../context/noteGraph";
 import { useSelected } from "../../context/selected";
 import { useNoteOrder } from "../../context/noteOrder";
+import BigNote from "./BigNote";
+import Connection from "./Connection";
+import { useNotePoints } from "../../context/notePoints";
 
 const filterValidators = {
     notebook: (note, nbId) => nbId ? note.idNotebook === Number(nbId) : true,
@@ -43,61 +46,21 @@ const getNoteWallGapFromUserOrderIndex = (graph, orderedNotes, orderedIndex) => 
 
 const ThoughtWall = () => {
 
-    const { graph } = useNoteGraph();
+    const { graph, addFrontendNote } = useNoteGraph();
     const { selected, setSelectedNote } = useSelected();
     const { orderedNotes } = useNoteOrder();
-    const { isPinned: isNoteboxPinned } = useNotebox();
+    const { isPinned: isNoteboxPinned, transitionToEditorFromPoint } = useNotebox();
 
-    const scrollToMap = useRef(new Map()).current;
-    
     const journalWallRef = useRef(null);
-    
-    let navigate = useNavigate();
 
-    const [independentNotes, centerPoints] = useMemo(() => {
-        let centerPointsArr = [], 
-            prevPointIndex = 0;
-        const independentNotes = orderedNotes.concat()
-            .filter(note => {
-                // Base filter that the centering note either must be 'main'
-                if (note.main !== true) return false;
-
-                // Any custom filters if not already filtered
-                // return Object.entries(filters).every(([type, filter]) => {
-                //     return filterValidators[type](note, filter);
-                // })
-                return filterValidators.notebook(note, selected.notebookId);
-            })
-            .map((note, i, filteredNotes) => {
-                // Dynamically creates centerPoint list
-                const count = centerPointsArr.length;
-                const prevNoteConnSize = graph.getVertexNeighborsWithWeightZero(
-                    filteredNotes[prevPointIndex]
-                ).length;
-                const connSize = graph.getVertexNeighborsWithWeightZero(note).length;
-
-                const point = (!count) 
-                    ? new Point( // Starting point if empty
-                        NOTE_WALL_X_START, 
-                        NOTE_WALL_Y_START
-                    ) : new Point(
-                        centerPointsArr[count - 1].x + (getNoteWallGap(prevNoteConnSize) / 2) + (getNoteWallGap(connSize) / 2), 
-                        NOTE_WALL_Y_START
-                    );
-                centerPointsArr.push(point);
-                scrollToMap.set(note.id, centerPointsArr[count]); // Adds point as the scrollTo point 
-                return { // Stores the note and index
-                    note, 
-                    graphIndex: prevPointIndex = i
-                };
-            });
-        return [independentNotes, centerPointsArr];
-    }, [graph, orderedNotes, scrollToMap, selected.notebookId]);
+    const { orderedNotePointsById } = useNotePoints();
 
     useLayoutEffect(() => {
+        // Scrolls to note upon selection
         if (selected?.scrollTo === false || !selected?.note?.main) return;
 
-        const notePoint = scrollToMap.get(selected.note?.id);
+        console.log('fired');
+        const notePoint = orderedNotePointsById[selected.note?.id];
         if (!notePoint) return;
 
         let { width: thoughtWallWidth, height: thoughtWallHeight } = journalWallRef.current.getBoundingClientRect();
@@ -111,24 +74,19 @@ const ThoughtWall = () => {
         };
 
         setTimeout(() => {
-            journalWallRef.current.scrollTo({
+            journalWallRef.current?.scrollTo({
                 left: notePoint.x - (thoughtWallWidth / 2) + noteDims.width / 2, 
                 top: notePoint.y - (thoughtWallHeight / 2) + noteDims.height / 2,
                 behavior: 'smooth' 
             });
         }, 0);
-    }, [selected, journalWallRef]);
+    }, [selected, journalWallRef, isNoteboxPinned, orderedNotePointsById]);
 
-    const getCenterPoint = (i) => centerPoints[i];
+    const getConnectingNotes = (note, includeFromNotes = true) => {
 
-    // Determines position of the lines that connect each centered, or 'independent,' note
-    const lineOrigin = (i) => {
-        const { x: left, y: top } = getCenterPoint(i) || {};
-        return left !== undefined ? { left, top: top + CENTER_LINE_X_OFFSET } : {};
-    }
+        return graph.getVertexNeighbors(String(note.id));
 
-    const getConnectingNotes = (graphIndex, includeFromNotes = true) => {
-
+        let graphIndex = 0;
         // Confirms valid graphIndex value of userOrderIndex
         if (typeof graphIndex !== 'number') return [];
 
@@ -136,7 +94,6 @@ const ThoughtWall = () => {
         const connIds = (includeFromNotes)
             ? graph.getVertexNeighbors(graphIndex)
             : graph.getVertexNeighborsWithWeightZero(graphIndex)
-        console.log('thoughtwall connIds', connIds, graphIndex);
         const notes = graph.getVertices();
 
         // Maps connection ids to live note data: O(n)
@@ -156,21 +113,17 @@ const ThoughtWall = () => {
         return connectingNotes;
     }
 
-    const onNoteMount = (note, userOrderIndex, point) => {
+    const onNoteMount = (note, orderedIndex, point) => {
         // Adds the scrollPoint of each note if not already set
-        if (!scrollToMap.has(note.id)) scrollToMap.set(note.id, point);
+        // if (!scrollToMap.has(note.id)) scrollToMap.set(note.id, point);
     } 
 
-    const onCenterNoteClick = useCallback((note, userOrderIndex, point) => {
-        const graphIndex = graph.indexOf(orderedNotes[userOrderIndex]);
+    const onCenterNoteClick = useCallback((note, orderedIndex, point) => {
+        const graphIndex = graph.indexOf(orderedNotes[orderedIndex]);
         setTimeout(() => {
             setSelectedNote(note, graphIndex);
         }, 50);
-    }, [graph, orderedNotes, setSelectedNote])
-
-    const onCenterNoteDoubleClick = (note, userOrderIndex, point) => {
-        navigate('/editor');
-    }
+    }, [setSelectedNote])
 
     const onConnectionClick = (note, orderedIndex, point, bigNoteIdStack, onCloseHandler) => {
         const graphIndex = graph.indexOf(orderedNotes[orderedIndex]);
@@ -196,7 +149,6 @@ const ThoughtWall = () => {
                 connectingNotes={getConnectingNotes(orderedIndex, true)}
                 onNoteMount={onNoteMount}
                 onNoteClick={onCenterNoteClick}
-                onNoteDoubleClick={onCenterNoteDoubleClick}
                 onConnectionClick={onConnectionClick}
                 originBigNoteIdStack={bigNoteIdStack}
                 selected={selected}
@@ -207,9 +159,56 @@ const ThoughtWall = () => {
         );
     };
 
+    const handleThoughtwallClicked = useCallback(e => {
+        if (e.target.className !== styles.main) return;
+
+        const { left, top } = e.target.getBoundingClientRect();
+        const notePoint = new Point(
+            e.clientX - parseInt(left),
+            e.clientY - parseInt(top),
+        );
+
+        // Adds new note to graph state
+        const newNote = addFrontendNote(notePoint);
+        
+        transitionToEditorFromPoint(newNote, graph.size(), notePoint);
+
+    }, [addFrontendNote, transitionToEditorFromPoint, graph])
+
+    const handleThoughtwallDragOver = useCallback(e => {
+        e.dataTransfer.dropEffect = "move";
+        e.preventDefault();
+    }, [])
+
     return (
-        <div className={styles.main} ref={journalWallRef}>
-            {independentNotes?.map(({ note, graphIndex }, i) => getCenterPoint(i) ? (
+        <div 
+            className={styles.main} 
+            ref={journalWallRef} 
+            onClick={handleThoughtwallClicked}
+            onDragOver={handleThoughtwallDragOver}
+        >
+            {orderedNotes.map((note, index) => (
+                <Fragment key={note.id}>
+                    <BigNote 
+                        noteAndIndex={{ note, index }} 
+                        onClick={onCenterNoteClick}
+                        onMount={onNoteMount}
+                        inlineStyle={Point.toInlineStyle(orderedNotePointsById[note?.id])}
+                        // defaultPoint={getCenterPoint(i)}
+                        isSelected={selected?.note?.id === note.id}
+                    />
+                    {getConnectingNotes(note)?.map(({ v }) => (
+                        <Connection 
+                            pointFrom={orderedNotePointsById[note?.id]}
+                            pointTo={orderedNotePointsById[v?.id]}
+                            stroke={RED}
+                            strokeWidth={3}
+                            key={`conn~${note?.id}-${v?.id}`}
+                        />
+                    ))}
+                </Fragment>
+            ))}
+            {/* independentNotes?.map(({ note, graphIndex, connections }, i) => getCenterPoint(i) ? (
                 <Fragment key={note.id}>
                     <Line 
                         length={i !== independentNotes.length - 1 ? getNoteWallGapFromUserOrderIndex(graph, orderedNotes, graphIndex) : 200} 
@@ -218,20 +217,33 @@ const ThoughtWall = () => {
                         color={i !== independentNotes.length - 1 ? RED : 'transparent'}
                         thickness={3}
                     />
-                    <NoteWall 
+                    <BigNote 
+                        noteAndIndex={{ note, index: graphIndex }} 
+                        onClick={onCenterNoteClick}
+                        onMount={onNoteMount}
+                        defaultPoint={getCenterPoint(i)}
+                        isSelected={selected?.note?.id === note.id}
+                    />
+                    {/* {connections.map(({ v }) => (
+                        <Connection 
+                            idFrom={note?.id}
+                            idTo={v?.id}
+                            color={'blue'}
+                        />
+                    ))} */}
+                    {/* <NoteWall 
                         note={note}
                         index={graphIndex}
-                        centerPoint={getCenterPoint(i)}
+                        centerPoint={getCenterPointgetCenterPoint(i)}
                         connectingNotes={getConnectingNotes(graphIndex)}
                         onNoteMount={onNoteMount}
                         onNoteClick={onCenterNoteClick}
-                        onNoteDoubleClick={onCenterNoteDoubleClick}
                         onConnectionClick={onConnectionClick}
                         tabIndex={100 + i}
                         selected={selected}
-                    />
-                </Fragment>
-            ) : null)}
+                    /> */}
+                {/* </Fragment> */}
+            {/* ) : null)} */}
         </div>
     )
 }

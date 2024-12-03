@@ -21,7 +21,6 @@ const NoteWall = ({
     onConnectionClick, 
     onConnectionDoubleClick, 
     onNoteClick, 
-    onNoteDoubleClick, 
     onNoteMount, 
     selected, 
     originBigNoteIdStack, 
@@ -141,7 +140,6 @@ const NoteWall = ({
                         noteAndIndex={{ note, index }} 
                         inlineStyle={bigNoteInlineStyle()} 
                         onClick={onNoteClick}
-                        onDoubleClick={onNoteDoubleClick}
                         onMount={onNoteMount}
                         onMouseEnter={() => setBigNoteAnimation(1)}
                         onMouseLeave={connectingNotes?.length === 0 ? () => setBigNoteAnimation(0) : null}
@@ -195,7 +193,6 @@ const NoteWall = ({
                     noteAndIndex={{ note, index }} 
                     inlineStyle={bigNoteInlineStyle()} 
                     onClick={onNoteClick}
-                    onDoubleClick={onNoteDoubleClick}
                     onMount={onNoteMount}
                     onMouseEnter={() => setBigNoteAnimation(1)}
                     isSelected={selected?.note?.id === note.id}

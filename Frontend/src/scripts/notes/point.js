@@ -22,14 +22,36 @@ import { checkIfNumbers } from '../utility/errorHandling.js';
         this.y = y;
     }
 
+    static equals (p1, p2) {
+        if (!Point.hasPointProperties(p1) || !Point.hasPointProperties(p2)) return false;
+        return p1.x === p2.x 
+            && p1.y === p2.y;
+    }
+
     /**
     * Checks if the object is a {@link Point} object purely based on having declared the Point properties.
     * 
-    * @param {*} o the Object to check.
+    * @param {*} p the Object to check.
     * @returns true if so, and false otherwise.
     */
-    static hasPointProperties (o) {
-        if (o.hasOwnProperty('x') && o.hasOwnProperty('y')) return true;
+    static hasPointProperties (p) {
+        if (p?.hasOwnProperty('x') && p?.hasOwnProperty('y')) return true;
         return false;
+    }
+
+    static isCoordinatesZeroZero (p) {
+        if (!Point.hasPointProperties(p)) return false;
+        return (p.x === 0 && p.y === 0);
+    }
+
+    static toInlineStyle (point) {
+        if (!Point.hasPointProperties(point)) return {};
+        return { left: point.x, top: point.y };
+    }
+
+    static fromInlineStyle (style) {
+        return (style?.left && style?.top)
+            ? new Point(style.left, style.top)
+            : null;
     }
 }

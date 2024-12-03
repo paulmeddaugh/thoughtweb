@@ -7,7 +7,7 @@ import ReorderingLine from './ReorderingLine';
 import { ListGroup } from 'react-bootstrap';
 import { DEFAULT_WIDTH, WINDOW_WIDTH_TO_FILL, NOTEBOOK_CONSTANTS } from '../../constants/constants';
 import SearchBar from './SearchBar';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useNotebox } from '../../context/notebox';
 import { useNotebooks } from '../../context/notebooks';
 import { useNoteOrder } from '../../context/noteOrder';
@@ -24,7 +24,7 @@ const unpinSrc = require("../../resources/pinIconFilled.png");
 
 const NoteBox = () => {
 
-    const { graph, updateNote, deleteNote } = useNoteGraph();
+    const { graph, deleteNote } = useNoteGraph();
     const { orderedNotes, updateNoteOrderAt, removeNoteOrder, removeNoteOrdersOfNotebook } = useNoteOrder();
     const { notebooks, createNotebook, updateNotebook, deleteNotebook } = useNotebooks();
     const { selected, setSelectedNote, setSelectedNotebook } = useSelected();
@@ -45,6 +45,7 @@ const NoteBox = () => {
     const pinIcon = useRef(null);
 
     const location = useLocation();
+    const navigate = useNavigate();
 
     const notebookOptions = useMemo(() => {
         const options = notebooks.concat();
@@ -188,6 +189,10 @@ const NoteBox = () => {
     const onSelectNote = (e, note, index) => {
         setSelectedNote(note, index);
     };
+
+    const onDoubleClickNote = (e, note, index) => {
+        navigate('/editor');
+    }
 
     /**
      * Moves reorderingNote component to visually represent reordering the note in whatever order
@@ -390,6 +395,7 @@ const NoteBox = () => {
                             index={graph.indexOf(note)}
                             ref={(el) => noteBoxNoteRefs.current.set(note?.id, el)}
                             onSelect={onSelectNote}
+                            onDoubleClick={onDoubleClickNote}
                             onNoteDragStart={onNoteDragStart}
                             onNoteDrag={onNoteDrag}
                             onNoteDrop={onNoteDrop}

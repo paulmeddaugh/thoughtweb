@@ -14,6 +14,8 @@
     --link-light-blue-800: rgba(0, 191, 255, 0.8);
     --notebox-input-hover-background-color: rgb(222, 222, 222);
 
+    --editor-background-color: whitesmoke;
+
     /* login screens */
     --login-background-url: url("../resources/backgroundWithoutVignette.png"),
         radial-gradient(var(--background-blue) 50%, var(--dark-background-blue));
@@ -51,8 +53,16 @@ body {
     z-index: 1;
 }
 
+.zIndex100 {
+    z-index: 100;
+}
+
 .relative {
     position: relative;
+}
+
+.absolute {
+    position: absolute;
 }
 
 .display-none {
@@ -101,4 +111,18 @@ body {
 	padding: 1px;
 	margin: 4px;
 	color: #00BFFF;
+}
+
+.grabbable {
+    cursor: move; /* fallback if grab cursor is unsupported */
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+}
+
+ /* (Optional) Apply a "closed-hand" cursor during drag operation. */
+.grabbable:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
 }
