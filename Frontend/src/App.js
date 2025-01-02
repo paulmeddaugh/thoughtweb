@@ -101,7 +101,8 @@ const App = () => {
     }, [user?.id, setLoading, setNotebooks, setGraph, setSelectedNote, setNoteOrder, setSelectedNotebook]);
     return (
         <>
-            <div id='portals'></div>
+            <div id='portals' />
+            <div id='dataTransferImage' />
             <main className={styles.fullSize}>
                 {(!graph || !user?.id) ? (
                     <LoggedOutStack />

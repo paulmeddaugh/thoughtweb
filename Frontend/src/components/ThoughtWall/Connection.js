@@ -1,23 +1,25 @@
 import React from "react";
 import Point from "../../scripts/notes/point";
+import { euclideanDistance } from "../../scripts/utility/utility";
 
 const Connection = React.memo(({ pointFrom, pointTo, curveOffset = 50, stroke = 'black', strokeWidth = 2 }) => {
     
     if (!Point.hasPointProperties(pointFrom) || !Point.hasPointProperties(pointTo)) {
-        throw new Error("The pointFrom or pointTo prop must be have Point class properties.")
+        throw new Error('The pointFrom or pointTo props must be Point class properties.\n'
+            + `pointFrom: ${pointFrom}, pointTo: ${pointTo}`)
     }
 
     // Calculate midpoint for the curve
-    const midPoint = new Point(
-        (pointFrom.x + pointTo.x) / 2,
-        (pointFrom.y + pointTo.y) / 2
-    );
+    // const midPoint = new Point(
+    //     (pointFrom.x + pointTo.x) / 2,
+    //     (pointFrom.y + pointTo.y) / 2
+    // );
 
     // Offset the midpoint for the curve
-    const controlPoint = new Point(
-        midPoint.x,
-        midPoint.y - curveOffset, // Adjust the offset for the curve's height
-    );
+    // const controlPoint = new Point(
+    //     midPoint.x,
+    //     midPoint.y - curveOffset, // Adjust the offset for the curve's height
+    // );
 
     const style = Point.toInlineStyle(new Point(
         Math.min(pointFrom.x, pointTo.x), 
@@ -25,6 +27,11 @@ const Connection = React.memo(({ pointFrom, pointTo, curveOffset = 50, stroke = 
     ));
     const width = Math.abs(pointFrom.x - pointTo.x);
     const height = Math.abs(pointFrom.y - pointTo.y);
+    
+    // const midPoint = new Point(
+    //     style.left + (pointFrom.x - pointTo.x),
+    //     style.top + (pointFrom.y - pointTo.y),
+    // )
 
     // Generate the SVG path data for the curve
     // const pathData = `M 0,0 Q ${controlPoint.x},${controlPoint.y} ${pointTo.x},${pointTo.y}`;
@@ -40,6 +47,7 @@ const Connection = React.memo(({ pointFrom, pointTo, curveOffset = 50, stroke = 
             xmlns="http://www.w3.org/2000/svg"
         >
             <path d={pathData} stroke={stroke} strokeWidth={strokeWidth} fill="none" />
+            {/* <circle cx="10" cy="10" r="20" fill="white" /> */}
         </svg>
     );
 }, (prev, props) => {

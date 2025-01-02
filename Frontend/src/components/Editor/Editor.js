@@ -475,7 +475,6 @@ const Editor = () => {
 							htmlFor="mainRadio" 
 						>
 							Main Note
-							<div className={styles.typeDescription}>{noteTypeDescriptions.main}</div>
 						</label>
 
 						<input 
@@ -494,7 +493,6 @@ const Editor = () => {
 							htmlFor="stickyRadio"
 						>
 							Sticky Note
-							<div className={styles.typeDescription}>{noteTypeDescriptions.sticky}</div>
 						</label>
 					</div>
 				</div>

@@ -32,7 +32,7 @@ export const MAIN_NOTE_SIZE = { width: 100, height: 100 };
 export const STICKY_NOTE_SIZE = { width: 100, height: 100 };
 export const STICKY_NOTE_WALL_WIDTH = 75; // truthfully idk
 
-export const NOTE_WALL_GAP = 500; // 435
+export const NOTE_WALL_GAP = 250; // 435
 export const NOTE_WALL_X_START = 250; //'30%';
 export const NOTE_WALL_Y_START = window.innerHeight / 2 - 20; //'40%';
 
@@ -41,4 +41,9 @@ export const CENTER_LINE_X_OFFSET = 0;
 export const NOTEBOOK_CONSTANTS = {
     ALL_NOTEBOOKS: null,
     ADD_A_NEW_NOTEBOOK: -2,
+}
+
+export const THOUGHTWALL_NOTE_DRAG_MODES = {
+    NOTE: 'note',
+    CONNECTION: 'connection',
 }

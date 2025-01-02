@@ -2,7 +2,6 @@ import styles from '../../styles/ThoughtWall/NoteWall.module.css';
 import { Fragment, useEffect, useRef, useState } from "react";
 import BigNote from './BigNote';
 import Note from "./Note";
-import Line from "./Line";
 import { binarySearch } from "../../scripts/utility/utility";
 import { 
     CONNECTIONS_DISTANCE, NOTE_CENTER_MAIN_X, NOTE_CENTER_MAIN_Y, NOTE_CENTER_STICKY_X, NOTE_CENTER_STICKY_Y, 
@@ -160,7 +159,7 @@ const NoteWall = ({
                                 isSelected={selected?.note?.id === connObj.note.id}
                                 isConnection={true}
                             />
-                            <Line 
+                            {/* <Line 
                                 angle={getLineAngle(i)} 
                                 length={CONNECTIONS_DISTANCE}
                                 color={RED}
@@ -169,7 +168,7 @@ const NoteWall = ({
                                 rotateOrigin={getNoteWallCenter()}
                                 animation={false}
                                 fadeIn={true}
-                            />
+                            /> */}
                         </Fragment>
                     ))}
                     <div className={styles.bigNoteTopBottomFade} id='bigNoteBottom' />

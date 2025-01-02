@@ -26,6 +26,9 @@ function AboutModal(props) {
 					<br/>
 					<div className='textCenter'>GitHub repository <a href='https://github.com/paulmeddaugh/thoughtweb' target='_blank'>here</a>.</div>
 					<div className='textCenter'>Trello board <a href='https://trello.com/b/IUqaznxv/thoughtweb' target='_blank'>here</a>.</div>
+					<br/>
+					Attribution Links:<br/>
+					<a href="https://www.flaticon.com/free-icons/drag" title="drag icons">Drag icons created by Pixel perfect - Flaticon</a><br/>
 				</div>
 			</Modal.Body>
 			<Modal.Footer>

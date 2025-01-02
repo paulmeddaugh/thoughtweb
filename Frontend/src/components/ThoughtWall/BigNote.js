@@ -1,127 +1,144 @@
 import styles from '../../styles/ThoughtWall/Note.module.css';
 import bigStyles from '../../styles/ThoughtWall/BigNote.module.css';
-import { useEffect, forwardRef, useMemo, useRef, useState } from 'react';
+import { useEffect, forwardRef, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Point from '../../scripts/notes/point';
 import { useNotePoints } from '../../context/notePoints';
-import { useNoteGraph } from '../../context/noteGraph';
-import { useSelected } from '../../context/selected';
+import { THOUGHTWALL_NOTE_DRAG_MODES } from '../../constants/constants';
+import { RED } from '../../constants/colors';
+import { svgToDataUri } from '../../scripts/utility/utility';
 
 const dateToMonthDayString = (date) => new Date(date).toLocaleDateString('en-us', { month:"short", day:"numeric" });
 
 const BigNote = ({ 
-    noteAndIndex,
-    defaultPoint,
+    note,
+    index,
     inlineStyle,
     onClick,
-    onMount,
     isSelected,
+    isHovering,
     onMouseEnter,
     onMouseLeave,
+    onDragStart,
+    onDrag,
+    onDragEnd,
+    onDragModeIconClick,
+    dragMode,
     isConnectedNote,
     children
 }, ref) => {
-    const { note, index, main, title, text, quotes, dateCreated } = useMemo(() => {
-        return { 
-            note: noteAndIndex?.note ?? {}, 
-            index: noteAndIndex?.index ?? null,
-            ...(noteAndIndex?.note ?? {}),
-        };
-    }, [noteAndIndex]);
-    const { updateNote } = useNoteGraph();
+    const { main, title, text, quotes, dateCreated } = note;
+    const { orderedNotePointsById } = useNotePoints();
+    const point = orderedNotePointsById[note?.id] ?? note?.point;
+    const [classNames, setClassNames] = useState('');
+    
     const navigate = useNavigate();
-    const { setSelectedNote } = useSelected()
-    const [draggingProps, setDraggingProps] = useState(null);
-    const point = note.point && !Point.isCoordinatesZeroZero(note.point)
-        ? note.point
-        : defaultPoint;
+
+    const handleClicked = useCallback(e => {
+        onClick?.(note, index, Point.fromInlineStyle(inlineStyle));
+    }, [index, inlineStyle, note, onClick])
+
+    const handleDragStart = useCallback(e => {
+        onDragStart?.(e, note, index);
+        if (dragMode === THOUGHTWALL_NOTE_DRAG_MODES.CONNECTION) {
+            const dataTransferImageDiv = document.getElementById('dataTransferImage');
+            const svgAsDataUri = svgToDataUri(`
+                <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="10" fill="${RED}" />
+                </svg>
+            `.trim());
+            dataTransferImageDiv.style.backgroundImage = `url("${svgAsDataUri}")`;
+            e.dataTransfer.setDragImage(dataTransferImageDiv, 10, 10);
+            
+            return;
+        } else {
+            setClassNames(bigStyles.dragging);
+
+        }
+    }, [dragMode, index, note, onDragStart]);
+
+    const handleDrag = useCallback(e => {
+        onDrag?.(e, note, index);
+    }, [index, note, onDrag]);
+
+    const handleDragEnd = useCallback(async e => {
+        onDragEnd?.(e, note, index);
+        if (dragMode === THOUGHTWALL_NOTE_DRAG_MODES.CONNECTION) return;
+        setClassNames(`${bigStyles.draggingShow} ${bigStyles.hover}`);
+    }, [dragMode, index, note, onDragEnd])
 
     useEffect(() => {
-        onMount?.(note, index, Point.fromInlineStyle(inlineStyle));
-    }, [index, inlineStyle, note, onMount]);
+        if (classNames === `${bigStyles.draggingShow} ${bigStyles.hover}`) {
+            setClassNames('');
+        }
+    }, [classNames])
 
-    const handleClicked = e => {
-        onClick?.(note, index, Point.fromInlineStyle(inlineStyle));
-    }
-
-    const handleDragStart = e => {
-        const { left, top, width, height } = e.target.getBoundingClientRect();
-        setDraggingProps({
-            startCenterOffsetX: e.clientX - left - (width / 2),
-            startCenterOffsetY: e.clientY - top - (height / 2),
-        })
-    };
-    const handleDragEnd = async e => {
-        e.preventDefault();
-        const thoughtwall = e.target.parentElement;
-        const { left, top } = thoughtwall.getBoundingClientRect();
-        const { startCenterOffsetX, startCenterOffsetY } = draggingProps;
-        note.point = new Point(
-            e.clientX - startCenterOffsetX - parseInt(left) + thoughtwall.scrollLeft,
-            e.clientY - startCenterOffsetY - parseInt(top) + thoughtwall.scrollTop,
-        );
-        setSelectedNote(note, index);
-        await updateNote(note);
-        setDraggingProps(null);
-    }
-
-    const handleFullscreenIconClick = e => {
-        navigate("/editor");
-    }
+    const handleFullscreenIconClick = useCallback(e => navigate("/editor"), [navigate])
+    const handleDragModeClick = useCallback(e => {
+        onDragModeIconClick?.(e, note, index)
+    }, [index, note, onDragModeIconClick])
 
     return (
-        <>
-            <div 
-                className={[
-                    bigStyles[main ? 'mainNote' : 'stickyNote'],
-                    draggingProps ? bigStyles.dragging : '',
-                ].join(' ')}
-                style={Point.toInlineStyle(point)}
-                onClick={handleClicked}
-                onMouseEnter={onMouseEnter}
-                onMouseLeave={onMouseLeave}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                draggable="true"
-                ref={ref}
-            >
-                <div className={`${bigStyles.content} ${bigStyles[main ? 'contentMain' : 'contentSticky']} grabbable`}>
-                    {title && (
-                        <div className={bigStyles.titleContainer}>
-                            <div 
-                                className={[
-                                    styles.noteTitle, 
-                                    bigStyles.noteTitle, 
-                                    isSelected ? styles.selected : '', 
-                                    isConnectedNote ? bigStyles.connectedNote : ''
-                                ].join(' ')}
-                            >
-                                {title}
-                            </div>
+        <div 
+            className={[
+                bigStyles[main ? 'mainNote' : 'stickyNote'],
+                isHovering ? bigStyles.hover : '',
+                classNames
+            ].join(' ')}
+            style={Point.toInlineStyle(point)}
+            onClick={handleClicked}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            onDragStart={handleDragStart}
+            onDrag={handleDrag}
+            onDragEnd={handleDragEnd}
+            draggable="true"
+            ref={ref}
+        >
+            <div className={`${bigStyles.content} grabbable`}>
+                {title && (
+                    <div className={bigStyles.titleContainer}>
+                        <div 
+                            className={[
+                                styles.noteTitle, 
+                                bigStyles.noteTitle, 
+                                isSelected ? styles.selected : '', 
+                                isConnectedNote ? bigStyles.connectedNote : ''
+                            ].join(' ')}
+                        >
+                            {title}
                         </div>
-                    )}
-                    {text && (
-                        <div className={bigStyles.noteText}>
-                            {text}
-                            {quotes && (
-                                <div className={bigStyles.noteQuotes}>{quotes}</div>
-                            )}
-                        </div>
-                    )}
-                </div>
-                <div className={bigStyles.noteDate}>
-                    {dateToMonthDayString(dateCreated)}
-                </div>
-                <div className={bigStyles.iconContainer}>
-                    <div 
-                        className={bigStyles.fullscreenIcon}
-                        onClick={handleFullscreenIconClick}
-                    />
-                </div>
-                {children}
+                    </div>
+                )}
+                {text && (
+                    <div className={bigStyles.noteText}>
+                        {text}
+                        {quotes && (
+                            <div className={bigStyles.noteQuotes}>{quotes}</div>
+                        )}
+                    </div>
+                )}
             </div>
-            
-        </>
+            <div className={bigStyles.noteDate}>
+                {dateToMonthDayString(dateCreated)}
+            </div>
+            <div className={bigStyles.iconContainer}>
+                <div 
+                    className={`${bigStyles.icon} ${bigStyles.fullscreenIcon}`}
+                    onClick={handleFullscreenIconClick}
+                />
+                <div 
+                    className={[
+                        bigStyles.icon,
+                        dragMode === THOUGHTWALL_NOTE_DRAG_MODES.NOTE
+                            ? bigStyles.noteDragIcon
+                            : bigStyles.connectionDragIcon
+                    ].join(' ')}
+                    onClick={handleDragModeClick}
+                ></div>
+            </div>
+            {children}
+        </div>
     )
 }
 

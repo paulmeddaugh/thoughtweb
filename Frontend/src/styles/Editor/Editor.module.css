@@ -88,7 +88,7 @@ img { /* Notebook icon */
 }
 
 #title {
-    font: 14pt Corbel;
+    font: 1.166rem Corbel;
     font-weight: bold;
     padding-left: 2px;
     padding-bottom: 0;
@@ -103,7 +103,7 @@ img { /* Notebook icon */
 }
 
 #text, #quotes {
-    font-size: 16px;
+    font-size: 1rem;
 }
 
 #text {
@@ -113,6 +113,7 @@ img { /* Notebook icon */
 
 #quotes {
     height: 10vh;
+    font-style: italic;
     font-family: 'Corbel Light';
     padding: 0;
     resize: none;
@@ -164,6 +165,10 @@ img { /* Notebook icon */
     border-color: lightgrey;
     color: grey;
     margin-right: 4px;
+}
+
+#mainButton:hover {
+    background-color: rgb(250, 250, 250);
 }
 
 #stickyButton {

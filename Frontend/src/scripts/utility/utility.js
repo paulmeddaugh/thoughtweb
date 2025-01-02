@@ -1,3 +1,4 @@
+import Point from '../notes/point.js';
 import { checkIfString } from './errorHandling.js';
 
 /**
@@ -204,4 +205,25 @@ export const fillObjectWithValues = (object, fillFunction) => {
 
 export const isValidEmail = (email) => {
     return /^[\w.]+@\w+\.\w+$/.test(email);
+}
+
+export const svgToDataUri = (svgString) => {
+    // Encode the SVG string to make it safe for inclusion in a data URI
+    const encodedSvg = encodeURIComponent(svgString)
+        .replace(/%20/g, ' ') // Preserve spaces for better compatibility
+        .replace(/%3D/g, '=')
+        .replace(/%22/g, "'")
+        .replace(/%3A/g, ':')
+        .replace(/%2F/g, '/');
+
+        // Not base64
+        return `data:image/svg+xml,${encodedSvg}`;
+}
+
+export const euclideanDistance = (x1, x2, y1, y2) => {
+    if (Point.hasPointProperties(x1) && Point.hasPointProperties(x2)) {
+        return Math.sqrt(Math.pow(x2.x - x1.x, 2) + Math.pow(x2.y - x1.y, 2));
+    }
+
+    return Math.sqrt(Math.pow(x2 - x1) + Math.pow(y2 - y1, 2))
 }

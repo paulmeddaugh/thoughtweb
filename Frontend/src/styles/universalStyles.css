@@ -126,3 +126,15 @@ body {
     cursor: -moz-grabbing;
     cursor: -webkit-grabbing;
 }
+
+#portals {
+    z-index: 100;
+}
+
+#dataTransferImage {
+    position: absolute;
+    top: -1000px;
+    width: 16px;
+    height: 16px;
+    background-size: 16px 16px;
+}

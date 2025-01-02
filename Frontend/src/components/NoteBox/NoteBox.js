@@ -406,7 +406,7 @@ const NoteBox = () => {
             </div>
             {/* <div ref={resizeBarRef} className={styles.resizeBar} /> */}
             <div id={styles.pin} onClick={() => setPinned(true)} ref={pinIcon}>
-                <span> thoughts </span>
+                <span>Notes</span>
                 <img src={pinSrc} alt="pin" />
             </div>
             <div id={styles.reorderingNoteContainer}>

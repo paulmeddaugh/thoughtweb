@@ -60,17 +60,22 @@ export const NoteGraphProvider = ({ children }) => {
         }
         setGraph(graph.clone());
     }, [graph]);
-    const addConnectionsToNote = async (note, connections) => {
-        // Add note connections to back and front
-        const connectionIds = connections.map((conn) => conn.v.id);
-        await addMultipleConnsOnBack(userId, note.id, connectionIds);
-        for (let conn of connections) { 
-            graph.addEdge(note, conn.v);
-        }
-        setGraph(graph.clone());
+    const addConnectionsToNote = useCallback(async (note, connections) => {
+        const newGraph = graph.clone();
+        const currentConnectionIds = new Set([ 
+            note.id, 
+            ...newGraph.getVertexNeighbors(note).map(conn => conn.v.id) 
+        ]);
+        const connectionIds = connections
+            .map(conn => conn.v.id)
+            .filter(connId => !currentConnectionIds.has(connId));
 
-        // update backend
-    }
+        await addMultipleConnsOnBack(userId, note.id, connectionIds);
+        for (let id of connectionIds) { 
+            newGraph.addEdge(note, { id });
+        }
+        setGraph(newGraph);
+    }, [graph, userId])
     const updateConnectionsOfNote = async (noteId, newConns, removeConns) => {
         // Local state
         setGraph(graph => {

@@ -1,5 +1,5 @@
 #noteBox {
-    z-index: 10;
+    z-index: 20;
     position: relative;
 }
 
@@ -61,7 +61,7 @@ img {
     transform-origin: bottom left;
     transform: rotate(90deg);
     border: 1px solid grey;
-    padding: 0 6px;
+    padding: 0 8px;
     z-index: 3;
     cursor: pointer;
 
@@ -78,7 +78,7 @@ img {
 }
 
 #pin span {
-    margin-right: 6px;
+    margin-right: 16px;
 }
 
 #pin:hover {

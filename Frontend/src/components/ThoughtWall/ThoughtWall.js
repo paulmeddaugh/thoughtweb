@@ -1,69 +1,85 @@
-import { Fragment, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { binarySearch } from '../../scripts/utility/utility';
 import styles from '../../styles/ThoughtWall/ThoughtWall.module.css';
+import { Fragment, useCallback, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import NoteWall from "./NoteWall";
-import Point from '../../scripts/notes/point';
-import Line from "./Line";
-import { comparePositions } from "../../scripts/utility/customOrderingAsStrings";
-import { WINDOW_WIDTH_TO_FILL } from "../../constants/constants";
-import { RED } from "../../constants/colors";
-import { 
-    MAIN_NOTE_SIZE, 
-    STICKY_NOTE_SIZE, 
-    STICKY_NOTE_WALL_WIDTH, 
-    NOTE_WALL_GAP, 
-    NOTE_WALL_X_START, 
-    NOTE_WALL_Y_START, 
-    CENTER_LINE_X_OFFSET 
-} from "../../constants/constants";
+import BigNote from "./BigNote";
+import Connection from "./Connection";
+
+import { useNavigate } from "react-router-dom";
 import { useNotebox } from "../../context/notebox";
 import { useNoteGraph } from "../../context/noteGraph";
 import { useSelected } from "../../context/selected";
 import { useNoteOrder } from "../../context/noteOrder";
-import BigNote from "./BigNote";
-import Connection from "./Connection";
 import { useNotePoints } from "../../context/notePoints";
 
-const filterValidators = {
-    notebook: (note, nbId) => nbId ? note.idNotebook === Number(nbId) : true,
-};
+import { THOUGHTWALL_NOTE_DRAG_MODES, WINDOW_WIDTH_TO_FILL } from "../../constants/constants";
+import { 
+    MAIN_NOTE_SIZE, 
+    STICKY_NOTE_SIZE, 
+    STICKY_NOTE_WALL_WIDTH, 
+    NOTE_WALL_Y_START, 
+} from "../../constants/constants";
+import { RED } from "../../constants/colors";
 
-const NOTE_WALL_GAP_BY_CONN_NUMBER = {
-    0: NOTE_WALL_GAP * .5,
-    1: NOTE_WALL_GAP * .7,
-    2: NOTE_WALL_GAP * .8,
-};
+import Point from '../../scripts/notes/point';
+import Box from "../../scripts/notes/box";
 
-const getNoteWallGap = (connectionCount) => NOTE_WALL_GAP_BY_CONN_NUMBER[connectionCount] ?? NOTE_WALL_GAP;
+import { binarySearch } from '../../scripts/utility/utility';
 
-const getNoteWallGapFromUserOrderIndex = (graph, orderedNotes, orderedIndex) => {
-    const connCount = graph.getVertexNeighborsWithWeightZero(
-        orderedNotes[orderedIndex]
-    ).length;
-    return getNoteWallGap(connCount);
+const draggingReducer = (state, action) => {
+    switch (action?.type) {
+        case 'toggleDragMode':
+            return {
+                ...state,
+                dragMode: state?.dragMode === THOUGHTWALL_NOTE_DRAG_MODES.CONNECTION
+                    ? THOUGHTWALL_NOTE_DRAG_MODES.NOTE
+                    : THOUGHTWALL_NOTE_DRAG_MODES.CONNECTION,
+            };
+        case `dragStart`:
+            return {
+                ...action?.payload,
+                dragMode: state?.dragMode
+            };
+        case `drag`: // not used in dragMode === THOUGHTWALL_NOTE_DRAG_MODES.NOTE
+            return {
+                ...state,
+                ...action?.payload,
+                dragMode: state?.dragMode
+            };
+        case `dragEnd`:
+        default:
+            return {
+                dragMode: state?.dragMode,
+            };
+    }
 }
 
 const ThoughtWall = () => {
 
-    const { graph, addFrontendNote } = useNoteGraph();
+    const { graph, addFrontendNote, addConnectionsToNote } = useNoteGraph();
     const { selected, setSelectedNote } = useSelected();
     const { orderedNotes } = useNoteOrder();
     const { isPinned: isNoteboxPinned, transitionToEditorFromPoint } = useNotebox();
 
-    const journalWallRef = useRef(null);
+    const thoughtWallRef = useRef(null);
+    const noteRefs = useRef(new Map()).current;
 
     const { orderedNotePointsById } = useNotePoints();
 
+    const { updateNote } = useNoteGraph();
+    const [dragging, draggingDispatch] = useReducer(draggingReducer, { 
+        dragMode: THOUGHTWALL_NOTE_DRAG_MODES.CONNECTION
+    });
+
+    const navigate = useNavigate();
+
     useLayoutEffect(() => {
         // Scrolls to note upon selection
-        if (selected?.scrollTo === false || !selected?.note?.main) return;
+        if (selected?.scrollTo === false) return;
 
-        console.log('fired');
         const notePoint = orderedNotePointsById[selected.note?.id];
         if (!notePoint) return;
 
-        let { width: thoughtWallWidth, height: thoughtWallHeight } = journalWallRef.current.getBoundingClientRect();
+        let { width: thoughtWallWidth, height: thoughtWallHeight } = thoughtWallRef.current.getBoundingClientRect();
 
         const isNoteBoxFilled = isNoteboxPinned && (window.innerWidth < WINDOW_WIDTH_TO_FILL);
         if (isNoteBoxFilled) thoughtWallWidth = window.innerWidth;
@@ -74,56 +90,24 @@ const ThoughtWall = () => {
         };
 
         setTimeout(() => {
-            journalWallRef.current?.scrollTo({
+            thoughtWallRef.current?.scrollTo({
                 left: notePoint.x - (thoughtWallWidth / 2) + noteDims.width / 2, 
                 top: notePoint.y - (thoughtWallHeight / 2) + noteDims.height / 2,
                 behavior: 'smooth' 
             });
         }, 0);
-    }, [selected, journalWallRef, isNoteboxPinned, orderedNotePointsById]);
+    }, [selected, thoughtWallRef, isNoteboxPinned, orderedNotePointsById]);
 
-    const getConnectingNotes = (note, includeFromNotes = true) => {
-
+    const getConnectingNotes = useCallback((note) => {
         return graph.getVertexNeighbors(String(note.id));
+    }, [graph])
 
-        let graphIndex = 0;
-        // Confirms valid graphIndex value of userOrderIndex
-        if (typeof graphIndex !== 'number') return [];
-
-        // Ids of all connections
-        const connIds = (includeFromNotes)
-            ? graph.getVertexNeighbors(graphIndex)
-            : graph.getVertexNeighborsWithWeightZero(graphIndex)
-        const notes = graph.getVertices();
-
-        // Maps connection ids to live note data: O(n)
-        const connectingNotes = connIds?.map(({ v, weight }, i) => {
-
-            // Determines note: O(log n)
-            const [ connNote ] = binarySearch(notes, v.id);
-
-            // Determines userOrderIndex: O(log n)
-            const { allNotesPosition } = connNote;
-            // const [ , index ] = binarySearch(noteOrder, allNotesPosition, 0, 'order', comparePositions);
-            const [ , index ] = binarySearch(orderedNotes, allNotesPosition, 0, 'allNotesPosition', comparePositions);
-
-            return { note: connNote, index, weight };
-        });
-
-        return connectingNotes;
-    }
-
-    const onNoteMount = (note, orderedIndex, point) => {
-        // Adds the scrollPoint of each note if not already set
-        // if (!scrollToMap.has(note.id)) scrollToMap.set(note.id, point);
-    } 
-
-    const onCenterNoteClick = useCallback((note, orderedIndex, point) => {
+    const handleNoteClick = useCallback((note, orderedIndex, point) => {
         const graphIndex = graph.indexOf(orderedNotes[orderedIndex]);
         setTimeout(() => {
             setSelectedNote(note, graphIndex);
         }, 50);
-    }, [setSelectedNote])
+    }, [graph, orderedNotes, setSelectedNote])
 
     const onConnectionClick = (note, orderedIndex, point, bigNoteIdStack, onCloseHandler) => {
         const graphIndex = graph.indexOf(orderedNotes[orderedIndex]);
@@ -135,11 +119,11 @@ const ThoughtWall = () => {
         }
         
         // Smooth scrolls to the connected note
-        const { width, left } = journalWallRef.current.getBoundingClientRect();
+        const { width, left } = thoughtWallRef.current.getBoundingClientRect();
         const noteWidth = (note.main) ? MAIN_NOTE_SIZE.width : STICKY_NOTE_WALL_WIDTH;
-        const absolutePointX = point.x - left + journalWallRef.current.scrollLeft + noteWidth;
+        const absolutePointX = point.x - left + thoughtWallRef.current.scrollLeft + noteWidth;
         const scrollX = absolutePointX - (width / 2);
-        journalWallRef.current.scrollTo({ left: scrollX, behavior: 'smooth' });
+        thoughtWallRef.current.scrollTo({ left: scrollX, behavior: 'smooth' });
 
         // Generates a NoteWall with the connected note as the center
         return (
@@ -147,8 +131,7 @@ const ThoughtWall = () => {
                 noteAndIndex={{ note: graph.getVertex(graphIndex), index: graphIndex }}
                 centerPoint={new Point(absolutePointX, NOTE_WALL_Y_START)}
                 connectingNotes={getConnectingNotes(orderedIndex, true)}
-                onNoteMount={onNoteMount}
-                onNoteClick={onCenterNoteClick}
+                onNoteClick={handleNoteClick}
                 onConnectionClick={onConnectionClick}
                 originBigNoteIdStack={bigNoteIdStack}
                 selected={selected}
@@ -168,36 +151,147 @@ const ThoughtWall = () => {
             e.clientY - parseInt(top),
         );
 
-        // Adds new note to graph state
-        const newNote = addFrontendNote(notePoint);
-        
-        transitionToEditorFromPoint(newNote, graph.size(), notePoint);
+        const onTransitionFullscreen = () => {
+            const newNote = addFrontendNote(notePoint);
+            setSelectedNote(newNote, graph.size());
+            navigate('/editor');
+        }
 
-    }, [addFrontendNote, transitionToEditorFromPoint, graph])
+        transitionToEditorFromPoint(notePoint, onTransitionFullscreen);
+    }, [addFrontendNote, transitionToEditorFromPoint, navigate, setSelectedNote, graph])
 
     const handleThoughtwallDragOver = useCallback(e => {
         e.dataTransfer.dropEffect = "move";
         e.preventDefault();
-    }, [])
+    }, []);
+
+    const handleNoteDragStart = useCallback((e, note, index) => {
+        let payload = null;
+        if (dragging?.dragMode === THOUGHTWALL_NOTE_DRAG_MODES.NOTE) {
+            const { left, top, width, height } = e.target.getBoundingClientRect();
+            payload = {
+                startCenterOffsetX: e.clientX - left - (width / 2),
+                startCenterOffsetY: e.clientY - top - (height / 2),
+            };
+        } else {
+            const { left: parentLeft, top: parentTop } = e.target.parentElement.getBoundingClientRect();
+            const noteRefBoxes = Array.from(noteRefs.entries())
+                .map(([id, el]) => Box.fromElement(el, id, parentLeft, parentTop))
+                .sort((box1, box2) => box1.p1.x - box2.p1.x);
+            payload = {
+                noteRefBoxes,
+                notePoint: note?.point,
+                parentLeft,
+                parentTop,
+            };
+        }
+
+        draggingDispatch({ type: 'dragStart', payload })
+    }, [dragging?.dragMode, noteRefs]);
+
+    const handleNoteDrag = useCallback((e, note, index) => {
+        if (dragging?.dragMode === THOUGHTWALL_NOTE_DRAG_MODES.NOTE) return;
+        const { scrollLeft, scrollTop } = thoughtWallRef.current;
+        const mousePoint = new Point(
+            e.clientX - dragging?.parentLeft + scrollLeft, 
+            e.clientY - dragging?.parentTop + scrollTop
+        );
+        let noteHoveringId = null;
+        for (let box of dragging.noteRefBoxes) {
+            if (box.isPointWithin(mousePoint, scrollLeft, scrollTop)) {
+                noteHoveringId = box.id;
+                break;
+            }
+        }
+        draggingDispatch({ 
+            type: 'drag', 
+            payload: {
+                mousePoint,
+                noteHoveringId,
+            }
+        })
+    }, [dragging]);
+
+    const handleNoteDragEnd = useCallback(async (e, note, index) => {
+        switch (dragging?.dragMode) {
+            case THOUGHTWALL_NOTE_DRAG_MODES.NOTE:
+                e.preventDefault();
+                const thoughtwall = e.target.parentElement;
+                const { left, top } = thoughtwall.getBoundingClientRect();
+                const { startCenterOffsetX, startCenterOffsetY } = dragging;
+                note.point = new Point(
+                    e.clientX - startCenterOffsetX - parseInt(left) + thoughtwall.scrollLeft,
+                    e.clientY - startCenterOffsetY - parseInt(top) + thoughtwall.scrollTop,
+                );
+                await updateNote(note);
+                break;
+            default: 
+            case THOUGHTWALL_NOTE_DRAG_MODES.CONNECTION:
+                const { noteRefBoxes, mousePoint } = dragging;
+                const { scrollLeft, scrollTop } = thoughtWallRef.current;
+                for (let box of noteRefBoxes) {
+                    if (box.isPointWithin(mousePoint, scrollLeft, scrollTop)) {
+                        console.log('connection made', box.id)
+                        await addConnectionsToNote(note, [{ v: { id: box.id } }]);
+                        break;
+                    }
+                }
+        }
+
+        setSelectedNote(note, index);
+        draggingDispatch({ type: 'dragEnd' });
+    }, [addConnectionsToNote, dragging, setSelectedNote, updateNote]);
+
+    const handleDragModeClick = useCallback((e, note, index) => {
+        console.log('toggled');
+        draggingDispatch({ type: 'toggleDragMode' });
+    }, []);
 
     return (
         <div 
             className={styles.main} 
-            ref={journalWallRef} 
+            ref={thoughtWallRef} 
             onClick={handleThoughtwallClicked}
             onDragOver={handleThoughtwallDragOver}
         >
             {orderedNotes.map((note, index) => (
                 <Fragment key={note.id}>
                     <BigNote 
-                        noteAndIndex={{ note, index }} 
-                        onClick={onCenterNoteClick}
-                        onMount={onNoteMount}
-                        inlineStyle={Point.toInlineStyle(orderedNotePointsById[note?.id])}
-                        // defaultPoint={getCenterPoint(i)}
+                        note={note}
+                        index={index}
+                        onClick={handleNoteClick}
+                        dragMode={dragging?.dragMode}
+                        onDragStart={handleNoteDragStart}
+                        onDrag={handleNoteDrag}
+                        onDragEnd={handleNoteDragEnd}
+                        onDragModeIconClick={handleDragModeClick}
+                        // inlineStyle={Point.toInlineStyle(orderedNotePointsById[note?.id])}
                         isSelected={selected?.note?.id === note.id}
+                        isHovering={dragging?.noteHoveringId === note.id}
+                        ref={ref => noteRefs.set(note?.id, ref)}
                     />
                     {getConnectingNotes(note)?.map(({ v }) => (
+                        <Connection 
+                            pointFrom={orderedNotePointsById[note?.id]}
+                            pointTo={orderedNotePointsById[v?.id]}
+                            stroke={RED}
+                            strokeWidth={5}
+                            key={`conn~${note?.id}-${v?.id}`}
+                        />
+                    ))}
+                </Fragment>
+            ))}
+            {(dragging?.notePoint && dragging?.mousePoint) && (
+                <Connection 
+                    pointFrom={dragging?.notePoint}
+                    pointTo={dragging?.mousePoint}
+                    stroke={RED}
+                    strokeWidth={5}
+                />
+            )}
+            {/* <svg>
+                {orderedNotes.map((note, index) => (
+                    getConnectingNotes(note)?.map(({ v }) => (
                         <Connection 
                             pointFrom={orderedNotePointsById[note?.id]}
                             pointTo={orderedNotePointsById[v?.id]}
@@ -205,45 +299,9 @@ const ThoughtWall = () => {
                             strokeWidth={3}
                             key={`conn~${note?.id}-${v?.id}`}
                         />
-                    ))}
-                </Fragment>
-            ))}
-            {/* independentNotes?.map(({ note, graphIndex, connections }, i) => getCenterPoint(i) ? (
-                <Fragment key={note.id}>
-                    <Line 
-                        length={i !== independentNotes.length - 1 ? getNoteWallGapFromUserOrderIndex(graph, orderedNotes, graphIndex) : 200} 
-                        rotateOrigin={lineOrigin(i)} 
-                        animation={false}
-                        color={i !== independentNotes.length - 1 ? RED : 'transparent'}
-                        thickness={3}
-                    />
-                    <BigNote 
-                        noteAndIndex={{ note, index: graphIndex }} 
-                        onClick={onCenterNoteClick}
-                        onMount={onNoteMount}
-                        defaultPoint={getCenterPoint(i)}
-                        isSelected={selected?.note?.id === note.id}
-                    />
-                    {/* {connections.map(({ v }) => (
-                        <Connection 
-                            idFrom={note?.id}
-                            idTo={v?.id}
-                            color={'blue'}
-                        />
-                    ))} */}
-                    {/* <NoteWall 
-                        note={note}
-                        index={graphIndex}
-                        centerPoint={getCenterPointgetCenterPoint(i)}
-                        connectingNotes={getConnectingNotes(graphIndex)}
-                        onNoteMount={onNoteMount}
-                        onNoteClick={onCenterNoteClick}
-                        onConnectionClick={onConnectionClick}
-                        tabIndex={100 + i}
-                        selected={selected}
-                    /> */}
-                {/* </Fragment> */}
-            {/* ) : null)} */}
+                    ))
+                ))}
+            </svg> */}
         </div>
     )
 }
