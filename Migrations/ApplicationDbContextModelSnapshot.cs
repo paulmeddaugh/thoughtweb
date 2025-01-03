@@ -224,7 +224,7 @@ namespace backend.Migrations
                     b.ToTable("userTokens", (string)null);
                 });
 
-            modelBuilder.Entity("backend.Models.Note.Connection", b =>
+            modelBuilder.Entity("backend.Models.Note.Connection.Connection", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -244,6 +244,14 @@ namespace backend.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("id_user");
 
+                    b.Property<int>("MidX")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("mid_x");
+
+                    b.Property<int>("MidY")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("mid_y");
+
                     b.HasKey("Id");
 
                     b.HasIndex("IdNote1");
@@ -262,14 +270,18 @@ namespace backend.Migrations
                         .HasColumnType("INTEGER")
                         .HasColumnName("id");
 
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("date_created");
-
-                    b.Property<string>("GlobalOrder")
+                    b.Property<string>("AllNotesPosition")
                         .IsRequired()
                         .HasColumnType("TEXT")
                         .HasColumnName("all_notes_position");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("color");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("date_created");
 
                     b.Property<long?>("IdNotebook")
                         .HasColumnType("INTEGER")
@@ -299,6 +311,14 @@ namespace backend.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("title");
 
+                    b.Property<int>("X")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("x");
+
+                    b.Property<int>("Y")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("y");
+
                     b.HasKey("Id");
 
                     b.HasIndex("IdNotebook");
@@ -314,6 +334,10 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasColumnName("id");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("color");
 
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("TEXT")
@@ -332,6 +356,14 @@ namespace backend.Migrations
                     b.Property<string>("NoteOrder")
                         .HasColumnType("TEXT")
                         .HasColumnName("note_order");
+
+                    b.Property<int>("X")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("x");
+
+                    b.Property<int>("Y")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("y");
 
                     b.HasKey("Id");
 
@@ -391,7 +423,7 @@ namespace backend.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("backend.Models.Note.Connection", b =>
+            modelBuilder.Entity("backend.Models.Note.Connection.Connection", b =>
                 {
                     b.HasOne("backend.Models.Note.Note", "Note1")
                         .WithMany("ConnectionsAsNote1")

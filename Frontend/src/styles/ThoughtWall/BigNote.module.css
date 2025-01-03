@@ -7,7 +7,7 @@
 .stickyNote {
     --card-width: 132px;
     --card-height: 132px;
-    --card-background-color: rgb(255, 247, 209); /* rgb(255, 242, 171) */
+    --card-background-color: var(--sticky-note-color); /* rgb(255, 242, 171) */
 }
 
 .mainNote, .stickyNote {

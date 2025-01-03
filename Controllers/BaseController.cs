@@ -6,6 +6,7 @@ public abstract class BaseController : Controller
 {        
     protected string GetLoggedInUserId()
     {
-        return User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return User?.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User?.FindFirstValue("sub");
     }
 }

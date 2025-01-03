@@ -12,8 +12,9 @@
     --link-light-blue-400: rgba(0, 191, 255, 0.4);
     --link-light-blue-700: rgba(0, 191, 255, 0.7);
     --link-light-blue-800: rgba(0, 191, 255, 0.8);
-    --notebox-input-hover-background-color: rgb(222, 222, 222);
 
+    --sticky-note-color: rgb(255, 247, 209);
+    --notebox-input-hover-background-color: rgb(222, 222, 222);
     --editor-background-color: whitesmoke;
 
     /* login screens */

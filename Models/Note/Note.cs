@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using AspNetCore.Identity.Database;
+using backend.Attributes;
 
 #nullable enable
 
@@ -50,7 +51,29 @@ public class Note
     public DateTime DateCreated { get; set; } = DateTime.Now;
 
     [Column("all_notes_position")]
-    public string GlobalOrder { get; set; } = "";
+    public string AllNotesPosition { get; set; } = "";
+
+    [Column("x")]
+    public int X { get; set; } = 0;
+
+    [Column("y")]
+    public int Y { get; set; } = 0;
+
+    // This is not mapped to the database
+    [NotMapped]
+    public Point.Point Point
+    {
+        get => new() { X = X, Y = Y };
+        set
+        {
+            X = value.X;
+            Y = value.Y;
+        }
+    }
+
+    [Column("color")]
+    [ColorValidation]
+    public string? Color { get; set; }
 
     [JsonIgnore]
     [InverseProperty(nameof(Connection.Connection.Note1))]
@@ -80,7 +103,7 @@ public class Note
     public Note(string title, string text, string quotes, string idUser, int idNotebook, bool isMain, string order)
         : this(title, text, quotes, idUser, idNotebook, isMain)
     {
-        GlobalOrder = order;
+        AllNotesPosition = order;
     }
 
     public override bool Equals(object? obj)
@@ -93,6 +116,7 @@ public class Note
                 IdNotebook == note.IdNotebook &&
                 IdUser == note.IdUser &&
                 IsMain == note.IsMain &&
+                AllNotesPosition == note.AllNotesPosition &&
                 DateCreated == note.DateCreated;
     }
 

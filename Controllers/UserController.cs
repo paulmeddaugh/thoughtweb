@@ -7,6 +7,7 @@ using backend.Contexts;
 using backend.Services;
 using backend.Util;
 using backend.Models.ExceptionDTO;
+using Microsoft.AspNetCore.Authentication;
 
 namespace backend.Controllers
 {
@@ -136,6 +137,20 @@ namespace backend.Controllers
         private async Task<CustomUser> GetLoggedInUser ()
         {
             return await _userManager.FindByIdAsync(GetLoggedInUserId());
+        }
+
+        [HttpGet("test")]
+        public IActionResult TestUserClaims()
+        {
+            var authScheme = HttpContext.AuthenticateAsync().Result;
+            var scheme = authScheme?.Succeeded == true ? authScheme.Ticket.AuthenticationScheme : "None";
+
+            return Ok(new
+            {
+                Scheme = scheme,
+                UserId = GetLoggedInUserId(),
+                Claims = User.Claims.Select(c => new { c.Type, c.Value })
+            });
         }
     }
 }

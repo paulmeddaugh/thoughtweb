@@ -70,6 +70,8 @@ public class ApplicationDbContext : IdentityDbContext<CustomUser>
                 .WithMany(n => n.ConnectionsAsNote2)
                 .HasForeignKey(c => c.IdNote2)
                 .HasConstraintName("FK_Connection_NoteId2");
+            entity
+                .HasKey(c => new { c.IdNote1, c.IdNote2 });
         });
     }
 }

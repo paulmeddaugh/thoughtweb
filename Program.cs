@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using backend.Services;
 using backend.Util;
 using backend.Contexts;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +16,7 @@ var env = builder.Environment;
 var configuration = builder.Configuration;
 var services = builder.Services;
 
-// SQL Server
+// SQL Server in production
 if (!env.IsDevelopment()) {
 
     var server = Environment.GetEnvironmentVariable("MYSQLHOST");
@@ -29,14 +30,13 @@ if (!env.IsDevelopment()) {
     services.AddDbContext<ApplicationDbContext>(options =>
         options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
         
-// Uses Mock DB with SqLite using file if development
+// Mock DB with SqLite using file if development
 } else {
     services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlite("DataSource=localSqlite.db")
     );
 }
 
-// Identity default options
 services.Configure<IdentityOptions>(options =>
 {
     // Password settings
@@ -60,10 +60,8 @@ services.Configure<IdentityOptions>(options =>
 
 services.AddDatabaseDeveloperPageExceptionFilter(); // Developer page exception filter (for migrations and errors during dev)
 
-// Email service
 services.AddTransient<IEmailSender, EmailSender>();
 
-// Identity services
 services.AddIdentityCore<CustomUser>()
     .AddSignInManager<SignInManager<CustomUser>>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -80,6 +78,7 @@ services.AddControllers(options =>
 services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.BearerScheme;
+        options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
         options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
     })
     .AddGoogle(GoogleDefaults.AuthenticationScheme, googleOptions =>
@@ -92,8 +91,38 @@ services.AddAuthentication(options =>
         googleOptions.ClientSecret = !env.IsDevelopment()
             ? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET")
             : configuration["Authentication:Google:ClientSecret"]; // from dotnet user-secrets
+
+        googleOptions.Events.OnRedirectToAuthorizationEndpoint = context =>
+        {
+            if (context.Request.Path.StartsWithSegments("/api/login/google")) 
+            {
+                context.Response.Redirect(context.RedirectUri);
+            } else 
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            }
+            return Task.CompletedTask;
+        };
+
     })
-    .AddBearerToken(IdentityConstants.BearerScheme)
+    .AddBearerToken(IdentityConstants.BearerScheme, options =>
+    {
+        options.Events = new BearerTokenEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Token == null)
+                {
+                    context.HttpContext.Items["AuthenticationFailure"] = "Token is missing";
+                }
+                if (!context.HttpContext.Items.ContainsKey("AuthenticationFailure"))
+                {
+                    context.HttpContext.Items["AuthenticationFailure"] = "Token is invalid or expired";
+                }
+                return Task.CompletedTask;
+            },
+        };
+    })
     .AddCookie(IdentityConstants.ExternalScheme);
     
 services.AddAuthorizationBuilder();
@@ -156,6 +185,22 @@ app.UseSpaStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
+app.Use(async (context, next) =>
+{
+    await next();
+
+    // Check for 401 Unauthorized responses and modify the response
+    if (context.Response.StatusCode == StatusCodes.Status401Unauthorized &&
+        context.Items.TryGetValue("AuthenticationFailure", out var failureMessage))
+    {
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(new
+        {
+            error = "Unauthorized",
+            message = failureMessage
+        });
+    }
+});
 app.UseAuthorization();
 
 app.MapControllers();

@@ -3,9 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using backend.Contexts;
 using backend.Models.Note;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace backend.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class NotesController : BaseController

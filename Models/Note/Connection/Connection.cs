@@ -41,6 +41,24 @@ public class Connection
     [ForeignKey(nameof(IdUser))]
     public virtual CustomUser? User { get; set; } = null;
 
+    [Column("mid_x")]
+    public int MidX { get; set; } = 0;
+
+    [Column("mid_y")]
+    public int MidY { get; set; } = 0;
+
+    // This is not mapped to the database
+    [NotMapped]
+    public Point.Point MidPoint
+    {
+        get => new() { X = MidX, Y = MidY };
+        set
+        {
+            MidX = value.X;
+            MidY = value.Y;
+        }
+    }
+
     public Connection(long idNote1, long idNote2, string idUser)
     {
         IdNote1 = idNote1;

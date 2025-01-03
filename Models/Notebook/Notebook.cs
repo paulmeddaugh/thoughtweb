@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using AspNetCore.Identity.Database;
+using backend.Attributes;
 
 namespace backend.Models.Notebook;
 
@@ -35,6 +36,28 @@ public class Notebook
 
     [Column("note_order")]
     public Dictionary<long, string> NoteOrder { get; set; } = [];
+
+    [Column("x")]
+    public int X { get; set; } = 0;
+
+    [Column("y")]
+    public int Y { get; set; } = 0;
+
+    // This is not mapped to the database
+    [NotMapped]
+    public Point.Point Point
+    {
+        get => new() { X = X, Y = Y };
+        set
+        {
+            X = value.X;
+            Y = value.Y;
+        }
+    }
+
+    [Column("color")]
+    [ColorValidation]
+    public string Color { get; set; } = null;
 
     [JsonIgnore]
     [InverseProperty(nameof(Note.Note.Notebook))]

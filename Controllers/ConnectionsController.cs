@@ -6,9 +6,11 @@ using System.Security.Claims;
 using backend.Models.ExceptionDTO;
 using Microsoft.AspNetCore.Identity;
 using AspNetCore.Identity.Database;
+using Microsoft.AspNetCore.Authorization;
 
 namespace backend.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ConnectionsController : BaseController
@@ -104,6 +106,12 @@ namespace backend.Controllers
                 {
                     return Unauthorized(new ExceptionDTO($"Index {i} of connections to create is unauthorized. "
                         + "All previous indices has been created."));
+                }
+
+                // Connection already exists
+                if (_dbContext.Connections.Find(connection.IdNote1, connection.IdNote2) != null
+                    || _dbContext.Connections.Find(connection.IdNote2, connection.IdNote1) != null) {
+                    continue;
                 }
 
                 _dbContext.Connections.Add(connection);
