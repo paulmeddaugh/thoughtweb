@@ -91,6 +91,7 @@ export const addMultipleConnsOnBack = async (userId, idNote1, idNote2Array) => {
 
 export const deleteMultipleConnsOnBack = async (userId, idNote1, idNote2Array) => {
     checkIfArrays({ idNote2Array });
+    console.log(`deleting connections of id ${idNote1}`, idNote2Array)
     const connections = Connection.fromIdNote2Array(null, idNote1, idNote2Array, userId);
     return axios.patch(`/api/connections/delete-requests`, connections, defaultConfig);
 }

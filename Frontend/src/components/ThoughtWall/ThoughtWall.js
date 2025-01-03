@@ -175,8 +175,9 @@ const ThoughtWall = () => {
             };
         } else {
             const { left: parentLeft, top: parentTop } = e.target.parentElement.getBoundingClientRect();
+            const { scrollLeft, scrollTop } = thoughtWallRef.current;
             const noteRefBoxes = Array.from(noteRefs.entries())
-                .map(([id, el]) => Box.fromElement(el, id, parentLeft, parentTop))
+                .map(([id, el]) => Box.fromElement(el, id, parentLeft - scrollLeft, parentTop - scrollTop))
                 .sort((box1, box2) => box1.p1.x - box2.p1.x);
             payload = {
                 noteRefBoxes,
@@ -192,13 +193,14 @@ const ThoughtWall = () => {
     const handleNoteDrag = useCallback((e, note, index) => {
         if (dragging?.dragMode === THOUGHTWALL_NOTE_DRAG_MODES.NOTE) return;
         const { scrollLeft, scrollTop } = thoughtWallRef.current;
+        console.log('scrolling', scrollLeft, scrollTop)
         const mousePoint = new Point(
             e.clientX - dragging?.parentLeft + scrollLeft, 
             e.clientY - dragging?.parentTop + scrollTop
         );
         let noteHoveringId = null;
         for (let box of dragging.noteRefBoxes) {
-            if (box.isPointWithin(mousePoint, scrollLeft, scrollTop)) {
+            if (box.isPointWithin(mousePoint)) {
                 noteHoveringId = box.id;
                 break;
             }
@@ -228,9 +230,8 @@ const ThoughtWall = () => {
             default: 
             case THOUGHTWALL_NOTE_DRAG_MODES.CONNECTION:
                 const { noteRefBoxes, mousePoint } = dragging;
-                const { scrollLeft, scrollTop } = thoughtWallRef.current;
                 for (let box of noteRefBoxes) {
-                    if (box.isPointWithin(mousePoint, scrollLeft, scrollTop)) {
+                    if (box.isPointWithin(mousePoint)) {
                         console.log('connection made', box.id)
                         await addConnectionsToNote(note, [{ v: { id: box.id } }]);
                         break;
