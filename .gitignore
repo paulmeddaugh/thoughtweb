@@ -239,3 +239,7 @@ _Pvt_Extensions
 /localSqlite.db-wal
 
 /.vscode/
+
+.env.local
+
+.DS_Store

@@ -10,8 +10,8 @@ const LABEL_DISAPPEAR_SEC = 8;
 const classes = {
     '/editor~true': styles.brownLabel,
     '/editor~false': styles.brownIcon,
-    '/~true': styles.whiteLabel,
-    '/~false': styles.whiteIcon,
+    '/thoughtwall~true': styles.whiteLabel,
+    '/thoughtwall~false': styles.whiteIcon,
 }
 
 const CreateNoteButton = ({ onClick }) => {

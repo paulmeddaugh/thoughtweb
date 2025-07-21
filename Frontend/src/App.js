@@ -69,6 +69,7 @@ const LoggedInStack = ({ children }) => {
                     <Route path="/account" element={<Account />} />
                     <Route path="*" element={<Navigate to="/thoughtwall" replace />} />
                 </Routes>
+                <CreateNoteButton />
             </BrowserRouter>
         </NoteboxProvider>
     );

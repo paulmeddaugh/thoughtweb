@@ -1,5 +1,5 @@
 # Running the Project
-To run the project from the root directory, run:
+To run the dev project from the root directory, run:
 ```
 cd backend/Frontend && yarn
 cd ..
@@ -14,7 +14,7 @@ dotnet run
 ### Changing The Environment Mode
 To change to either "Development" or "Production", run:
 ```
-export ASPNETCORE_ENVIRONMENT="Development"|"Production"
+export ASPNETCORE_ENVIRONMENT=<Development|Production>
 ```
 
 ### Generating Controllers
