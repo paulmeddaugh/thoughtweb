@@ -107,8 +107,6 @@ div.center {
     height: 16px;
     top: 7px;
     z-index: 1;
-    background-size: contain;
-    background-image: url(../../resources/originalIconImages/descriptionIcon.png);
 }
 
 .description {

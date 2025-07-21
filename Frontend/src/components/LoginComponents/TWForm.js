@@ -7,6 +7,7 @@ import Notification from '../global/Notification';
 // Hooks
 import useForm from '../../hooks/useForm';
 import { useMemo, useState } from 'react';
+import DescriptionIcon from '../global/Icons/DescriptionIcon';
 
 const LINK_ROUTES = [
     { text: 'Login', route: '/login' }, 
@@ -138,7 +139,13 @@ function InputRow ({ label, name, description, error, showError, onChange, onBlu
             </div>
             {!!description && (
                 <>
-                    <div className={styles.descriptionIcon}></div>
+                    {/* <div className={styles.descriptionIcon}></div> */}
+                    <DescriptionIcon 
+                        fillColor='white' 
+                        width={16} 
+                        height={16}
+                        className={styles.descriptionIcon}
+                    />
                     <div className={styles.description}>{description}</div>
                 </>
             )}
