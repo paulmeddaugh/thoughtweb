@@ -243,3 +243,6 @@ _Pvt_Extensions
 .env.local
 
 .DS_Store
+
+# Image building files
+*.pdn
